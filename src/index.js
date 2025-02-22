@@ -1,10 +1,17 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
+import { API_ROUTES, BASE_URL } from "./apiRoutes";
+import axios from "axios";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
+//declaracion de variables globales
+window.API_ROUTES = API_ROUTES;
+window.BASE_URL = BASE_URL;
+axios.defaults.baseURL = window.BASE_URL;
+
 root.render(
   <React.StrictMode>
     <App />
