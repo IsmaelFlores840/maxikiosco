@@ -14,7 +14,9 @@ axios.defaults.baseURL = window.BASE_URL;
 
 root.render(
   <React.StrictMode>
-    <App />
+    <ConfigProvider locale={esES}>
+      <App />
+    </ConfigProvider>
   </React.StrictMode>
 );
 
