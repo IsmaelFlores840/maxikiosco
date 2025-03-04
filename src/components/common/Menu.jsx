@@ -1,15 +1,19 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  Form,
   Navbar,
   Container,
   Nav,
   NavDropdown,
   InputGroup,
+  Modal,
+  Button,
 } from "react-bootstrap";
+// import {  Form, Button, Card, Row, Col } from "react-bootstrap";
 import AuthHelper from "../../helpers/authenticationHelper";
 import { useState } from "react";
-import { Modal, Form, Button } from "react-bootstrap";
+// import { Modal, Form, Button, Label } from "react-bootstrap";
 // import axios from "axios";
 import {
   // toast,
@@ -45,10 +49,18 @@ const Menu = (props) => {
     >
       <Container>
         <Navbar.Brand as={Link} to="/">
-          {/* <img
-            src={require("../../img/logo-cpa.png")}
-            alt="Logo Caja Popular de Ahorros"
-          ></img> */}
+          <img
+            src={require("../../img/cheffs-logo.png")}
+            alt="Logo Cheffs"
+            style={{ width: "50px" }}
+          ></img>
+          <Form.Label
+            className=" h5 fw-bold  justify-content-space-around"
+            style={{ paddingLeft: "20px" }}
+          >
+            {" "}
+            Maxikiosco cheffs
+          </Form.Label>
         </Navbar.Brand>
         {user ? (
           <Nav className="col-sm-12 col-lg-2">
@@ -56,7 +68,7 @@ const Menu = (props) => {
               title={AuthHelper.getUser()}
               id="basic-nav-dropdown"
               align="end"
-              className="fs-6 fw-bold letraCaja"
+              className="fs-6 fw-bold "
               style={{ width: "200px", whiteSpace: "nowrap" }}
             >
               {cambioClave ? (

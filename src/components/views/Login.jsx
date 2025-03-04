@@ -4,6 +4,7 @@ import { FaSignInAlt } from "react-icons/fa";
 import { useNavigate } from "react-router";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import "../../App.css";
 // import LoginApi from "./api/LoginApi";
 // import cliente from "../../../img/logo-quiniela.png";
 import React, { useEffect } from "react";
@@ -15,9 +16,10 @@ import {
   // toast,
   Toaster,
 } from "react-hot-toast";
+import BtnVolver from "../common/BtnVolver";
 // import CambiarClave from "./CambiarClave";
 
-const LoginForm = (props) => {
+const Login = (props) => {
   const navigate = useNavigate();
 
   const {
@@ -47,33 +49,34 @@ const LoginForm = (props) => {
   //     .catch((error) => {
   //       Notificaciones.notificacion("No se pudo establecer la conexión");
   //     });
-  // }
+  // }className="login"
 
   return (
     <Container className="mainSection my-5">
       <Toaster />
       <section>
         <Row className="d-flex justify-content-center g-0">
-          <Col md="8">
+          <Col md="6">
             <Card className="d-flex justify-content-center">
               <Row className="d-flex justify-content-center">
-                <Col
+                {/* <Col
                   md="5"
                   className="d-flex justify-content-center align-items-center"
                 >
                   {/* <Card.Img
                     style={{ width: "80%", height: "auto" }}
                     src={cliente}
-                  /> */}
-                </Col>
+                  /> 
+                </Col> 
+                */}
                 <Col
-                  md="5"
+                  // md="5"
                   className="d-flex justify-content-center align-items-center m-3"
                 >
                   <div>
                     <span className="h1 fw-bold">
                       <FaSignInAlt size={50} style={{ color: "#F15E21" }} />{" "}
-                      Juegos CPA
+                      Maxikiosco
                     </span>
                     <Form
                       className="my-2"
@@ -152,4 +155,4 @@ const LoginForm = (props) => {
   );
 };
 
-export default LoginForm;
+export default Login;

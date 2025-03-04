@@ -1,4 +1,5 @@
 import React from "react";
+import "../../App.css";
 import { Container, Row } from "react-bootstrap";
 import BtnVolver from "../common/BtnVolver";
 
