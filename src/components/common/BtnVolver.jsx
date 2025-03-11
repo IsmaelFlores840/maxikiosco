@@ -12,7 +12,7 @@ const BtnVolver = (props) => {
 
   return (
     <Button
-      className="justify-content-center btn botonCPA me-3 d-flex align-items-center"
+      className="justify-content-center btn boton me-3 d-flex align-items-center"
       onClick={handleGoBack}
       style={props.style}
     >

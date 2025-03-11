@@ -6,7 +6,7 @@ export const API_ROUTES = {
   USUARIO: BASE_URL + "usuario/",
   PRODUCTO: BASE_URL + "producto/",
   ROL: BASE_URL + "rol/",
-  DETALLEVENTA: BASE_URL + "detalleVenta/",
+  DETALLEVENTA: BASE_URL + "detalle-venta/",
   CATEGORIA: BASE_URL + "categoria/",
   PROVEEDOR: BASE_URL + "proveedor/",
   CLIENTE: BASE_URL + "cliente/",

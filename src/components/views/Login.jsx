@@ -5,19 +5,19 @@ import { useNavigate } from "react-router";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import "../../App.css";
-// import LoginApi from "./api/LoginApi";
+import LoginApi from "./api/LoginApi";
 // import cliente from "../../../img/logo-quiniela.png";
 import React, { useEffect } from "react";
-// import AuthenticationHelper from "../../helpers/authenticationHelper";
-// import Notificaciones from "../../helpers/notificacionesToast";
+import AuthenticationHelper from "../../helpers/authenticationHelper";
+import Notificaciones from "../../helpers/notificacionesToast";
 // import PasswordResetForm from "./PasswordResetForm";
+import ConsultasAPI from "../../helpers/consultasAPI";
 
 import {
   // toast,
   Toaster,
 } from "react-hot-toast";
 import BtnVolver from "../common/BtnVolver";
-// import CambiarClave from "./CambiarClave";
 
 const Login = (props) => {
   const navigate = useNavigate();
@@ -49,7 +49,33 @@ const Login = (props) => {
   //     .catch((error) => {
   //       Notificaciones.notificacion("No se pudo establecer la conexión");
   //     });
-  // }className="login"
+  // }
+
+  const login = async (data) => {
+    const { email, password } = data;
+
+    try {
+      // Enviar las credenciales al backend
+      const response = await ConsultasAPI.CrearObjeto("login-custom/", {
+        email,
+        password,
+      });
+
+      if (response.data && response.data.status === "success") {
+        console.log("Autenticación exitosa:", response.data);
+        // Guardar el token o redirigir al usuario
+        // Ejemplo: localStorage.setItem('token', response.data.token);
+      } else {
+        console.error("Error en la autenticación:", response.data.message);
+        alert(response.data.message); // Mostrar un mensaje de error al usuario
+      }
+    } catch (error) {
+      console.error("Error en la solicitud:", error);
+      alert(
+        "Ocurrió un error al intentar iniciar sesión. Por favor, inténtalo de nuevo."
+      ); // Mensaje genérico
+    }
+  };
 
   return (
     <Container className="mainSection my-5">
@@ -59,29 +85,13 @@ const Login = (props) => {
           <Col md="6">
             <Card className="d-flex justify-content-center">
               <Row className="d-flex justify-content-center">
-                {/* <Col
-                  md="5"
-                  className="d-flex justify-content-center align-items-center"
-                >
-                  {/* <Card.Img
-                    style={{ width: "80%", height: "auto" }}
-                    src={cliente}
-                  /> 
-                </Col> 
-                */}
-                <Col
-                  // md="5"
-                  className="d-flex justify-content-center align-items-center m-3"
-                >
+                <Col className="d-flex justify-content-center align-items-center m-3">
                   <div>
                     <span className="h1 fw-bold">
                       <FaSignInAlt size={50} style={{ color: "#F15E21" }} />{" "}
                       Maxikiosco
                     </span>
-                    <Form
-                      className="my-2"
-                      // onSubmit={handleSubmit(loginAcceder)}
-                    >
+                    <Form className="my-2" onSubmit={handleSubmit(login)}>
                       <Form.Group className="mb-3">
                         <Form.Label className="fs-4">Usuario</Form.Label>
                         <Form.Control
@@ -139,7 +149,7 @@ const Login = (props) => {
                         </Link>
                       </Form.Group>
                       <section className="d-flex justify-content-center mb-3">
-                        <Button className="botonCPA fw-bold" type="submit">
+                        <Button className="boton fw-bold" type="submit">
                           Iniciar Sesión
                         </Button>
                       </section>

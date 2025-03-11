@@ -242,10 +242,10 @@ export function ChangePasswordModal(props) {
           )}
         </Modal.Body>
         <Modal.Footer>
-          <Button className="botonCPA" onClick={handleClose}>
+          <Button className="boton" onClick={handleClose}>
             Cancelar
           </Button>
-          <Button className="botonCPA" type="submit">
+          <Button className="boton" type="submit">
             Cambiar password
           </Button>
         </Modal.Footer>
