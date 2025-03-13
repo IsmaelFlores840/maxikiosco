@@ -21,6 +21,7 @@ import BtnVolver from "../common/BtnVolver";
 
 const Login = (props) => {
   const navigate = useNavigate();
+  const URL_USUARIOS = window.API_ROUTES.USUARIOS;
 
   const {
     register,
@@ -53,27 +54,56 @@ const Login = (props) => {
 
   const login = async (data) => {
     const { email, password } = data;
-
     try {
       // Enviar las credenciales al backend
-      const response = await ConsultasAPI.CrearObjeto("login-custom/", {
+      const response = await ConsultasAPI.CrearObjeto(URL_USUARIOS, {
         email,
         password,
       });
 
       if (response.data && response.data.status === "success") {
         console.log("Autenticación exitosa:", response.data);
-        // Guardar el token o redirigir al usuario
-        // Ejemplo: localStorage.setItem('token', response.data.token);
+
+        // Guardar el token en localStorage (si el backend lo devuelve)
+        if (response.data.token) {
+          localStorage.setItem("token", response.data.token);
+        }
+
+        // Redirigir al usuario a la página principal
+        window.location.href = "/"; // Cambia "/" por la ruta a la que quieras redirigir
       } else {
         console.error("Error en la autenticación:", response.data.message);
         alert(response.data.message); // Mostrar un mensaje de error al usuario
       }
+      console.log(response.data);
     } catch (error) {
       console.error("Error en la solicitud:", error);
-      alert(
-        "Ocurrió un error al intentar iniciar sesión. Por favor, inténtalo de nuevo."
-      ); // Mensaje genérico
+
+      // Manejar errores específicos
+      if (error.response) {
+        // El backend respondió con un código de estado fuera del rango 2xx
+        if (error.response.status === 400) {
+          alert(
+            "Credenciales incorrectas. Por favor, verifica tu email y contraseña."
+          );
+        } else if (error.response.status === 404) {
+          alert("El servidor no pudo encontrar la ruta solicitada.");
+        } else {
+          alert(
+            "Ocurrió un error en el servidor. Por favor, inténtalo de nuevo."
+          );
+        }
+      } else if (error.request) {
+        // La solicitud fue hecha pero no se recibió respuesta
+        alert(
+          "No se recibió respuesta del servidor. Verifica tu conexión a internet."
+        );
+      } else {
+        // Otros errores
+        alert(
+          "Ocurrió un error al intentar iniciar sesión. Por favor, inténtalo de nuevo."
+        );
+      }
     }
   };
 

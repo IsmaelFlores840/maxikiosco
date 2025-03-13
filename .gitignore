@@ -1,9 +1,28 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
+# Entorno virtual python
+backend/venv/*
+backend/.env
+backend/administracion/build/*
+backend/administracion/staticfiles
+# Docker compose 
+backend/docker-compose.yml
+# Migraciones
+backend/maxikiosco/migrations/*
+!backend/maxikiosco/migrations/__init__.py
+backend/financiera/usuarios/migrations/*
+!backend/financiera/usuarios/migrations/__init__.py
+backend/administracion/build/*
+backend/administracion/staticfiles
+__pycache__/
 # dependencies
 /node_modules
 /.pnp
 .pnp.js
+
+# Front
+frontend/node_modules/
+frontend/build/*
+frontend/.env
 
 # testing
 /coverage
