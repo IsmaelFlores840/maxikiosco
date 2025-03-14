@@ -1,111 +1,44 @@
-// import React from "react";
 import { Container, Form, Button, Card, Row, Col } from "react-bootstrap";
 import { FaSignInAlt } from "react-icons/fa";
 import { useNavigate } from "react-router";
-import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import "../../App.css";
 import LoginApi from "./api/LoginApi";
-// import cliente from "../../../img/logo-quiniela.png";
 import React, { useEffect } from "react";
 import AuthenticationHelper from "../../helpers/authenticationHelper";
 import Notificaciones from "../../helpers/notificacionesToast";
-// import PasswordResetForm from "./PasswordResetForm";
-import ConsultasAPI from "../../helpers/consultasAPI";
 
-import {
-  // toast,
-  Toaster,
-} from "react-hot-toast";
-import BtnVolver from "../common/BtnVolver";
+import { Toaster } from "react-hot-toast";
 
-const Login = (props) => {
-  const navigate = useNavigate();
-  const URL_USUARIOS = window.API_ROUTES.USUARIOS;
-
+const LoginForm = (props) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
-  // function loginAcceder(values) {
-  //   LoginApi.Login(values.email, values.password)
-  //     .then((response) => {
-  //       if (!response.data.rol) {
-  //         Notificaciones.notificacion("El usuario no posee un rol");
-  //         AuthenticationHelper.logout();
-  //       } else if (response.data.has_changed_password) {
-  //         // Si el usuario ha cambiado su clave, permitir el acceso a las rutas
-  //         // que corresponden a su rol
-  //         props.onLogin(values.email, true, response.data.rol);
-  //         // navigate("/");
-  //       } else {
-  //         // Si el usuario no ha cambiado su clave, redirigir a la ventana de cambio de clave
-  //         props.onLogin(values.email, false, response.data.rol);
-  //         // navigate("/cambiar-clave");
-  //         // <CambiarClave rolUsuario={rolUser}/>
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       Notificaciones.notificacion("No se pudo establecer la conexión");
-  //     });
-  // }
-
-  const login = async (data) => {
-    const { email, password } = data;
-    try {
-      // Enviar las credenciales al backend
-      const response = await ConsultasAPI.CrearObjeto(URL_USUARIOS, {
-        email,
-        password,
-      });
-
-      if (response.data && response.data.status === "success") {
-        console.log("Autenticación exitosa:", response.data);
-
-        // Guardar el token en localStorage (si el backend lo devuelve)
-        if (response.data.token) {
-          localStorage.setItem("token", response.data.token);
-        }
-
-        // Redirigir al usuario a la página principal
-        window.location.href = "/"; // Cambia "/" por la ruta a la que quieras redirigir
-      } else {
-        console.error("Error en la autenticación:", response.data.message);
-        alert(response.data.message); // Mostrar un mensaje de error al usuario
-      }
-      console.log(response.data);
-    } catch (error) {
-      console.error("Error en la solicitud:", error);
-
-      // Manejar errores específicos
-      if (error.response) {
-        // El backend respondió con un código de estado fuera del rango 2xx
-        if (error.response.status === 400) {
-          alert(
-            "Credenciales incorrectas. Por favor, verifica tu email y contraseña."
-          );
-        } else if (error.response.status === 404) {
-          alert("El servidor no pudo encontrar la ruta solicitada.");
+  function loginAcceder(values) {
+    LoginApi.Login(values.email, values.password)
+      .then((response) => {
+        if (!response.data.rol) {
+          Notificaciones.notificacion("El usuario no posee un rol");
+          AuthenticationHelper.logout();
+        } else if (response.data.has_changed_password) {
+          // Si el usuario ha cambiado su clave, permitir el acceso a las rutas
+          // que corresponden a su rol
+          props.onLogin(values.email, true, response.data.rol);
+          // navigate("/");
         } else {
-          alert(
-            "Ocurrió un error en el servidor. Por favor, inténtalo de nuevo."
-          );
+          // Si el usuario no ha cambiado su clave, redirigir a la ventana de cambio de clave
+          props.onLogin(values.email, false, response.data.rol);
+          // navigate("/cambiar-clave");
+          // <CambiarClave rolUsuario={rolUser}/>
         }
-      } else if (error.request) {
-        // La solicitud fue hecha pero no se recibió respuesta
-        alert(
-          "No se recibió respuesta del servidor. Verifica tu conexión a internet."
-        );
-      } else {
-        // Otros errores
-        alert(
-          "Ocurrió un error al intentar iniciar sesión. Por favor, inténtalo de nuevo."
-        );
-      }
-    }
-  };
+      })
+      .catch((error) => {
+        Notificaciones.notificacion("No se pudo establecer la conexión");
+      });
+  }
 
   return (
     <Container className="mainSection my-5">
@@ -121,13 +54,18 @@ const Login = (props) => {
                       <FaSignInAlt size={50} style={{ color: "#F15E21" }} />{" "}
                       Maxikiosco
                     </span>
-                    <Form className="my-2" onSubmit={handleSubmit(login)}>
+                    <Form
+                      className="my-2"
+                      onSubmit={handleSubmit(loginAcceder)}
+                      style={{ width: "max-content" }}
+                    >
                       <Form.Group className="mb-3">
                         <Form.Label className="fs-4">Usuario</Form.Label>
                         <Form.Control
                           type="email"
                           autoComplete="off" // Deshabilitar autocompletado para este campo
                           placeholder="Ingrese su correo electrónico"
+                          style={{ width: "400px" }} //Ajusta el valor de 'width' según tus preferencias
                           {...register("email", {
                             required: "El nombre de usuario es obligatorio",
                             minLength: {
@@ -173,10 +111,20 @@ const Login = (props) => {
                           {errors.descripcion?.message}
                         </Form.Text>
                       </Form.Group>
-                      <Form.Group className="mb-3 text-center">
-                        <Link to="/recuperar-clave">
-                          ¿Olvidaste tu contraseña?
-                        </Link>
+                      <Form.Group className="mb-3 d-flex justify-content-between align-items-center">
+                        <Form.Check type="checkbox" id="recordarme">
+                          <Form.Check.Input />
+                          <Form.Check.Label style={{ fontSize: "12px" }}>
+                            RECORDARME
+                          </Form.Check.Label>
+                        </Form.Check>
+                        {/* <Link
+                          to="/recuperar-clave"
+                          className="red-link"
+                          style={{ fontSize: "12px" }}
+                        >
+                          OLVIDÉ MI CONTRASEÑA
+                        </Link> */}
                       </Form.Group>
                       <section className="d-flex justify-content-center mb-3">
                         <Button className="boton fw-bold" type="submit">
@@ -194,5 +142,4 @@ const Login = (props) => {
     </Container>
   );
 };
-
-export default Login;
+export default LoginForm;

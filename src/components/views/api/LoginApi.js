@@ -37,5 +37,4 @@ const LoginApi = {
     return Promise.race([requestPromise, timeoutPromise]);
   },
 };
-
 export default LoginApi;

@@ -5,10 +5,7 @@ import { Navigate, BrowserRouter, Routes, Route } from "react-router-dom";
 import Error from "./components/common/Error";
 import Footer from "./components/common/Footer";
 import Menu from "./components/common/Menu";
-import Login from "./components/views/Login";
-// import { ProtectedRoute } from "./components/common/ProtectedRoute";
-
-// import icon from "./img/favicon.ico";
+import LoginForm from "./components/views/Login";
 import AuthHelper from "./helpers/authenticationHelper";
 
 function App() {
@@ -48,14 +45,18 @@ function App() {
         <Route
           path="/login"
           element={
-            !user ? <Login onLogin={updateUserState} /> : <Navigate to="/" />
+            !user ? (
+              <LoginForm onLogin={updateUserState} />
+            ) : (
+              <Navigate to="/" />
+            )
           }
         />
         <Route
           exact
           path="/"
           element={
-            <Login rolUsuario={rol} redirectTo="/" errorRedirectTo="*" /> // Redirige a /extractos si cambioClave es true
+            <LoginForm rolUsuario={rol} redirectTo="/" errorRedirectTo="*" /> // Redirige a /extractos si cambioClave es true
           }
         />
         <Route path="*" element={<Error />} />
