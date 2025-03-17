@@ -10,8 +10,8 @@ const Principal = (props) => {
     <Container className="mainSection">
       <Row className="auto mt-5">
         {rolUser === "ADMINISTRADOR" ||
-        rolUser === "GERENCIA-QUINIELA" ||
-        rolUser === "CONSULTOR" ? (
+        rolUser === "PROVEEDOR" ||
+        rolUser === "EMPLEADO" ? (
           <>
             <Col
               style={{
@@ -26,12 +26,14 @@ const Principal = (props) => {
                 //   // "../../img/MenuPrincipal/Usuarios.png"
                 // }
                 texto={"Punto de Venta"}
-                ruta={"/punto-de-venta"} // modificar
+                ruta={"/Punto-venta"} // modificar
               />
             </Col>
           </>
         ) : null}
-        {rolUser === "ADMINISTRADOR" ? (
+        {rolUser === "ADMINISTRADOR" ||
+        rolUser === "PROVEEDOR" ||
+        rolUser === "EMPLEADO" ? (
           <>
             <Col
               style={{
@@ -43,12 +45,14 @@ const Principal = (props) => {
               <OpcionInicio
                 // imagen={require("../../img/MenuPrincipal/Titulares.png")}
                 texto={"Gestión de Productos"}
-                ruta={"/titulares"}
+                ruta={"/Gestion-productos"}
               />
             </Col>
           </>
         ) : null}
-        {rolUser === "ADMINISTRADOR" ? (
+        {rolUser === "ADMINISTRADOR" ||
+        rolUser === "PROVEEDOR" ||
+        rolUser === "EMPLEADO" ? (
           <>
             <Col
               style={{
@@ -60,12 +64,14 @@ const Principal = (props) => {
               <OpcionInicio
                 // imagen={require("../../img/MenuPrincipal/Agencias.png")}
                 texto={"Gestión de Proveedores"}
-                ruta={"/agencias"}
+                ruta={"/Gestion-proveedores"}
               />
             </Col>
           </>
         ) : null}
-        {rolUser === "ADMINISTRADOR" ? (
+        {rolUser === "ADMINISTRADOR" ||
+        rolUser === "PROVEEDOR" ||
+        rolUser === "EMPLEADO" ? (
           <>
             <Col
               style={{
@@ -77,14 +83,14 @@ const Principal = (props) => {
               <OpcionInicio
                 // imagen={require("../../img/MenuPrincipal/Liquidacion.png")}
                 texto={"Gestión de Ventas"}
-                ruta={"/liquidaciones"}
+                ruta={"/Gestion-ventas"}
               />
             </Col>
           </>
         ) : null}
         {rolUser === "ADMINISTRADOR" ||
-        rolUser === "GERENCIA-QUINIELA" ||
-        rolUser === "CONSULTOR" ? (
+        rolUser === "PROVEEDOR" ||
+        rolUser === "EMPLEADO" ? (
           <>
             <Col
               style={{
@@ -96,12 +102,14 @@ const Principal = (props) => {
               <OpcionInicio
                 // imagen={require("../../img/MenuPrincipal/SubirExtracto.png")}
                 texto={"Gestión de Clientes"}
-                ruta={"/extractos"}
+                ruta={"/Gestion-clientes"}
               />
             </Col>
           </>
         ) : null}
-        {rolUser === "ADMINISTRADOR" ? (
+        {rolUser === "ADMINISTRADOR" ||
+        rolUser === "PROVEEDOR" ||
+        rolUser === "EMPLEADO" ? (
           <>
             <Col
               style={{
@@ -113,12 +121,14 @@ const Principal = (props) => {
               <OpcionInicio
                 // imagen={require("../../img/MenuPrincipal/logotuqui.png")}
                 texto={"Gestión de Empleados"}
-                ruta={"/tuqui"}
+                ruta={"/Gestion-Empleados"}
               />
             </Col>
           </>
         ) : null}
-        {rolUser === "ADMINISTRADOR" ? (
+        {rolUser === "ADMINISTRADOR" ||
+        rolUser === "PROVEEDOR" ||
+        rolUser === "EMPLEADO" ? (
           <>
             <Col
               style={{
@@ -130,7 +140,7 @@ const Principal = (props) => {
               <OpcionInicio
                 // imagen={require("../../img/MenuPrincipal/SubirExtracto.png")}
                 texto={"Reportes"}
-                ruta={"/subirImgExtracto"}
+                ruta={"/Reportes"}
               />
             </Col>
           </>

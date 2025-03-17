@@ -8,6 +8,9 @@ import Menu from "./components/common/Menu";
 import LoginForm from "./components/views/Login";
 import Principal from "./components/views/Principal";
 import AuthHelper from "./helpers/authenticationHelper";
+import Reportes from "./components/views/Reportes";
+import Productos from "./components/views/Productos";
+import { ProtectedRoute } from "./components/common/ProtectedRoute";
 
 function App() {
   const [cambioClave, setCambioClave] = useState(
@@ -66,6 +69,33 @@ function App() {
           path="/"
           element={
             user ? <Navigate to="/Principal" /> : <Navigate to="/login" />
+          }
+        />
+        {/* Seccion Productos */}
+        <Route
+          exact
+          path="/Gestion-productos"
+          element={
+            <ProtectedRoute
+              isAllowed={rol === "ADMINISTRADOR"}
+              redirectTo="/Gestion-productos"
+              errorRedirectTo="*"
+            >
+              <Productos rolUsuario={rol} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          exact
+          path="/Reportes"
+          element={
+            <ProtectedRoute
+              isAllowed={rol === "ADMINISTRADOR"}
+              redirectTo="/Reportes"
+              errorRedirectTo="*"
+            >
+              <Reportes rolUsuario={rol} />
+            </ProtectedRoute>
           }
         />
 

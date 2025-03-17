@@ -12,7 +12,6 @@ const LoginApi = {
       password: password,
     })
       .then((response) => {
-        console.log(response);
         clearTimeout(requestTimeout); // Limpiamos el tiempo de espera si la solicitud se completó correctamente
         AuthenticationHelper.storeJwtToken("Bearer " + response.data.access);
         AuthenticationHelper.storeRol(response.data.rol);
