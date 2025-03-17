@@ -1,13 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import App from "./App";
+import { ConfigProvider } from "antd";
+import esES from "antd/es/locale/es_ES";
 import "./index.css";
 import "./App.css";
-import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { API_ROUTES, BASE_URL } from "./apiRoutes";
 import axios from "axios";
-import esES from "antd/es/locale/es_ES";
-import { ConfigProvider } from "antd";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 //declaracion de variables globales

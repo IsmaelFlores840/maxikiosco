@@ -7,16 +7,30 @@ import LoginApi from "./api/LoginApi";
 import React, { useEffect } from "react";
 import AuthenticationHelper from "../../helpers/authenticationHelper";
 import Notificaciones from "../../helpers/notificacionesToast";
+import ConsultasAPI from "../../helpers/consultasAPI";
 
 import { Toaster } from "react-hot-toast";
 
 const LoginForm = (props) => {
+  const URL_ROL = window.API_ROUTES.ROL;
+
+  // useEffect(() => {
+  //   obtenerRol();
+  //   console.log(URL_ROL);
+  // }, []);
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
+  // const obtenerRol = async () => {
+  //   const response = await ConsultasAPI.ObtenerObjeto(
+  //     URL_ROL + "busqueda/",
+  //     "Administrador"
+  //   );
+  //   console.log(response.data);
+  // };
   function loginAcceder(values) {
     LoginApi.Login(values.email, values.password)
       .then((response) => {
@@ -47,8 +61,8 @@ const LoginForm = (props) => {
         <Row className="d-flex justify-content-center g-0">
           <Col md="6">
             <Card className="d-flex justify-content-center">
-              <Row className="d-flex justify-content-center">
-                <Col className="d-flex justify-content-center align-items-center m-3">
+              <Row className="">
+                <Col className="d-flex justify-content-center">
                   <div>
                     <span className="h1 fw-bold">
                       <FaSignInAlt size={50} style={{ color: "#F15E21" }} />{" "}
@@ -57,15 +71,15 @@ const LoginForm = (props) => {
                     <Form
                       className="my-2"
                       onSubmit={handleSubmit(loginAcceder)}
-                      style={{ width: "max-content" }}
+                      // style={{ width: "max-content" }}
                     >
                       <Form.Group className="mb-3">
                         <Form.Label className="fs-4">Usuario</Form.Label>
                         <Form.Control
                           type="email"
-                          autoComplete="off" // Deshabilitar autocompletado para este campo
+                          autoComplete="off"
                           placeholder="Ingrese su correo electrónico"
-                          style={{ width: "400px" }} //Ajusta el valor de 'width' según tus preferencias
+                          // style={{ width: "400px" }}
                           {...register("email", {
                             required: "El nombre de usuario es obligatorio",
                             minLength: {
@@ -91,7 +105,7 @@ const LoginForm = (props) => {
                         <Form.Label className="fs-4">Contraseña</Form.Label>
                         <Form.Control
                           type="password"
-                          autoComplete="off" // Deshabilitar autocompletado para este campo
+                          autoComplete="off"
                           placeholder="Ingrese su contraseña"
                           {...register("password", {
                             required: "Debe ingresar una contraseña",

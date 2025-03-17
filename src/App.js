@@ -6,6 +6,7 @@ import Error from "./components/common/Error";
 import Footer from "./components/common/Footer";
 import Menu from "./components/common/Menu";
 import LoginForm from "./components/views/Login";
+import Principal from "./components/views/Principal";
 import AuthHelper from "./helpers/authenticationHelper";
 
 function App() {
@@ -22,9 +23,7 @@ function App() {
   );
 
   useEffect(() => {
-    // const favicon = document.getElementById("favicon");
-    // favicon.setAttribute("href", icon);
-    console.log(user);
+    // Aquí puedes agregar lógica adicional si es necesario
   }, []);
 
   const updateUserState = (newUser, newCambioClave, newRol) => {
@@ -34,31 +33,43 @@ function App() {
   };
 
   const handleLogout = () => {
-    // Función para cerrar sesión y actualizar el estado del usuario a null
     setUser(null);
+    AuthHelper.logout(); // Asegúrate de limpiar el estado de autenticación
   };
+
   return (
     <BrowserRouter>
       <Menu user={user} cambioClave={cambioClave} onLogout={handleLogout} />
       <Routes>
-        {/* Rutas accesibles sin estar logueado */}
+        {/* Ruta para el login */}
         <Route
           path="/login"
           element={
             !user ? (
               <LoginForm onLogin={updateUserState} />
             ) : (
-              <Navigate to="/" />
+              <Navigate to="/Principal" />
             )
           }
         />
+
+        {/* Ruta para la página principal (menú) */}
         <Route
-          exact
-          path="/"
+          path="/Principal"
           element={
-            <LoginForm rolUsuario={rol} redirectTo="/" errorRedirectTo="*" /> // Redirige a /extractos si cambioClave es true
+            user ? <Principal rolUsuario={rol} /> : <Navigate to="/login" />
           }
         />
+
+        {/* Ruta raíz: redirige a /Principal si está logueado, o a /login si no lo está */}
+        <Route
+          path="/"
+          element={
+            user ? <Navigate to="/Principal" /> : <Navigate to="/login" />
+          }
+        />
+
+        {/* Ruta para errores */}
         <Route path="*" element={<Error />} />
       </Routes>
       <Footer />
