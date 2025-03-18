@@ -4,31 +4,52 @@ import "react-datetime/css/react-datetime.css";
 import { MaterialReactTable } from "material-react-table";
 import { MRT_Localization_ES } from "material-react-table/locales/es";
 import moment from "moment";
+import Datetime from "react-datetime";
 import BtnVolver from "../common/BtnVolver";
+import ModalCargarProducto from "./ModalCargarProducto";
+import ConsultasAPI from "../../helpers/consultasAPI";
+
 // import { FaPlus } from "react-icons/fa";
-// import ModalGenerarCartones from "./ModalGenerarCartones";
 // import { FaEraser } from "react-icons/fa";
 
 import { darken, IconButton } from "@mui/material";
 
-const Productos = () => {
-  const [count, setCount] = useState();
+const Productos = (props) => {
+  const URL_ROL = window.API_ROUTES.ROL;
+
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
   });
-
-  const [fecha, setFecha] = useState({
+  const [count, setCount] = useState();
+  const [fechaDesde, setFechaDesde] = useState({
     fechaMuestra: null,
     fechaComparar: null,
   });
+  const [fechaHasta, setFechaHasta] = useState({
+    fechaMuestra: null,
+    fechaComparar: null,
+  });
+
+  // const [fecha, setFecha] = useState({
+  //   fechaMuestra: null,
+  //   fechaComparar: null,
+  // });
+  const [modalCargarProducto, setModalCargarProducto] = useState(false);
   const [columnFilters, setColumnFilters] = useState([]);
   const [data, setData] = useState([]);
   const [tipoCategoria, setTipoCategoria] = useState("");
   const [tablaTipoCategoria, setTablaTipoCategoria] = useState([]);
+  const datetimeRefHasta = useRef(null);
+  const datetimeRefDesde = useRef(null);
+  const [producto, setProducto] = useState("");
+  const [estado, setEstado] = useState("");
+  const [n, setN] = useState();
 
   useEffect(() => {
     cargarTablaCategoria();
+    // cargarRol();
+    // cargarSorteos();
   }, []);
 
   // useEffect(() => {
@@ -37,6 +58,49 @@ const Productos = () => {
 
   const handleTablaCategoriaChange = (categoria) => {
     setTipoCategoria(tablaTipoCategoria.filter((x) => x.id === categoria)[0]);
+  };
+  // const cargarRol = async () => {
+  //   const response = await ConsultasAPI.ObtenerObjeto(
+  //     URL_ROL + "busqueda/",
+  //     "ADMINISTRADOR"
+  //   );
+  //   console.log(response.data);
+  // };
+  const cargarSorteos = () => {
+    try {
+      ConsultasAPI.ListarObjetos(
+        URL_ROL,
+        pagination.pageIndex,
+        pagination.pageSize,
+        columnFilters,
+        fechaDesde.fechaMuestra,
+        fechaHasta.fechaMuestra,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ).then((response) => {
+        setCount(response.data.count);
+        console.log(response.data);
+        setN(response.data.count / 10);
+        let Roles = response.data.results;
+        if (Roles) {
+          let datos = [];
+          Roles.forEach((sorteo) => {
+            datos.push({
+              id: sorteo.id,
+              nombre: sorteo.nombre,
+            });
+          });
+          setData(datos);
+        }
+      });
+    } catch (error) {
+      console.log("Problemas al mostrar cartones no registrados", error);
+    }
   };
 
   const cargarTablaCategoria = () => {
@@ -50,7 +114,7 @@ const Productos = () => {
       detalle: "Categoria 2",
     });
     tipoCategoria.push({
-      id: 2,
+      id: 3,
       detalle: "Categoria 3",
     });
 
@@ -74,6 +138,11 @@ const Productos = () => {
       size: 20,
     },
     {
+      header: "Estado",
+      accessorKey: "estado",
+      size: 20,
+    },
+    {
       header: "Precio",
       accessorKey: "precio",
       size: 20,
@@ -85,10 +154,28 @@ const Productos = () => {
     },
   ]);
 
-  useEffect(() => {
-    const currentDate = moment().format("DD/MM/YYYY");
-    setFecha({ fechaMuestra: currentDate, fechaComparar: null });
-  }, []);
+  const handleFechaDesdeChange = (momentDate) => {
+    const fechaMuestra = momentDate.format("DD/MM/YYYY");
+    const fechaComparar = momentDate.format("YYYY-MM-DD");
+    setFechaDesde({ fechaMuestra: fechaMuestra, fechaComparar: fechaComparar });
+  };
+
+  const handleFechaHastaChange = (momentDate) => {
+    const fechaMuestra = momentDate.format("DD/MM/YYYY");
+    const fechaComparar = momentDate.format("YYYY-MM-DD");
+    setFechaHasta({ fechaMuestra: fechaMuestra, fechaComparar: fechaComparar });
+  };
+
+  const handleOpenModalAgregarProducto = () => {
+    setModalCargarProducto(true);
+  };
+  const handleCloseModalAgregarProducto = () => {
+    setModalCargarProducto(false);
+  };
+  // useEffect(() => {
+  //   const currentDate = moment().format("DD/MM/YYYY");
+  //   setFecha({ fechaMuestra: currentDate, fechaComparar: null });
+  // }, []);
 
   //Para el botón de limpiar filtro
   // var valid = function (current) {
@@ -98,37 +185,147 @@ const Productos = () => {
   // };
 
   return (
-    <Container className="mt-4 mb-4">
+    <Container className="mt-4 mb-4 mainSection">
       <Card>
-        <Card.Header>
+        <Card.Header
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center", // Centra verticalmente los elementos hijos
+          }}
+        >
           <h2 className="py-2 fw ml-10">Productos</h2>
-          {/* Venta Mostrador */}
+
+          <Button
+            className="btn"
+            style={{
+              justifyContent: "center",
+              alignItems: "center",
+              marginRight: 10,
+            }}
+            onClick={handleOpenModalAgregarProducto}
+          >
+            Agregar
+          </Button>
         </Card.Header>
         <Card.Body className="mb-13" style={{ paddingBottom: 0 }}>
-          {/* <Card className="mb-13"> */}
-          {/* <Form.Group
-              md="3"
-              style={{ alignContent: "center", justifyContent: "center" }}
-            >
-              <Form.Label>Fecha Hasta:</Form.Label>
-              <Col md={9}>
+          <Row
+            style={{
+              padding: 10,
+            }}
+          >
+            <Col>
+              <Form.Group
+                style={{
+                  alignItems: "center",
+                }}
+              >
+                <Form.Label>Fecha Desde:</Form.Label>
+                <Datetime
+                  timeFormat={false}
+                  style={{ width: "100%", height: "32px" }}
+                  dateFormat="DD/MM/YYYY"
+                  updateOnView=""
+                  inputProps={{
+                    readOnly: true,
+                    placeholder: "Elegir fecha",
+                  }}
+                  ref={datetimeRefDesde}
+                  value={null}
+                  onChange={handleFechaDesdeChange}
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group
+                style={{
+                  alignItems: "center",
+                }}
+              >
+                <Form.Label>Fecha Hasta:</Form.Label>
+                <Datetime
+                  timeFormat={false}
+                  style={{ width: "100%", height: "32px" }}
+                  dateFormat="DD/MM/YYYY"
+                  updateOnView=""
+                  inputProps={{
+                    readOnly: true,
+                    placeholder: "Elegir fecha",
+                  }}
+                  ref={datetimeRefHasta}
+                  value={null}
+                  onChange={handleFechaHastaChange}
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group
+                style={{
+                  alignItems: "center",
+                }}
+              >
+                <Form.Label>Categoría:</Form.Label>
+                <Form.Select
+                  value={tipoCategoria}
+                  onChange={(event) => {
+                    handleTablaCategoriaChange(event.target.value);
+                  }}
+                >
+                  <option hidden>Elegir Categoria</option>
+                  {tablaTipoCategoria.length > 0
+                    ? tablaTipoCategoria.map((categoria) => (
+                        <option key={categoria.id} value={categoria.id}>
+                          {categoria.detalle}
+                        </option>
+                      ))
+                    : null}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group
+                style={{
+                  alignItems: "center",
+                }}
+              >
+                <Form.Label>Producto:</Form.Label>
+
                 <Form.Control
                   // readOnly={true}
                   type="text"
-                  value={ahora}
+                  value={producto}
                   onChange={(e) => {
-                    setAhora(e.target.value);
+                    setProducto(e.target.value);
                   }}
                   required
                 />
-              </Col>
-            </Form.Group> */}
+              </Form.Group>
+            </Col>
+          </Row>
+          {/* <Col md={9}>
+              <Form.Control
+                // readOnly={true}
+                type="text"
+                value={fechaHasta}
+                onChange={(e) => {
+                  setAhora(e.target.value);
+                }}
+                required
+              />
+            </Col> */}
 
           <Card className="mb-13">
             <MaterialReactTable
               className="w-100"
               columns={columns}
               data={data}
+              muiTablePaperProps={{
+                elevation: 0,
+                sx: {
+                  borderRadius: "0",
+                  // border: "1px dashed #e0e0e0",
+                },
+              }}
               muiTableBodyProps={{
                 sx: (theme) => ({
                   "& tr:nth-of-type(odd)": {
@@ -141,7 +338,7 @@ const Productos = () => {
                 }),
               }}
               initialState={{
-                columnVisibility: { id_sorteo: false }, //hide firstName column by default
+                columnVisibility: { id: false }, //hide firstName column by default
                 showColumnFilters: true,
               }}
               editingMode="modal" //default
@@ -151,11 +348,12 @@ const Productos = () => {
               enableColumnActions={false}
               enableSorting={false}
               displayColumnDefOptions={{ "mrt-row-actions": { size: 10 } }} //change width of actions column to 300px
-              enableGlobalFilter={true} //turn off a feature
+              enableGlobalFilter={false} //turn off a feature
               enableFilters={false}
               localization={MRT_Localization_ES}
               positionActionsColumn="last"
-              manualPagination
+              // manualPagination
+              // manualFiltering
               muiTablePaginationProps={{
                 rowsPerPageOptions: [10],
               }}
@@ -184,20 +382,15 @@ const Productos = () => {
               >
                 Volver
               </BtnVolver>
-              {/* <Button className="btn botonCPA me-3" route="/tuqui/Vendedores"> Ingresar</Button> */}
-              {/* <button
-                className="btn botonCPA me-3"
-                style={{ float: "right" }}
-                onClick={() => {
-                  //funcion para imprimir
-                }}
-              >
-                Ingresar
-              </button> */}
             </section>
           </Row>
         </Card.Body>
       </Card>
+
+      <ModalCargarProducto
+        onClose={handleCloseModalAgregarProducto}
+        show={modalCargarProducto}
+      />
     </Container>
   );
 };

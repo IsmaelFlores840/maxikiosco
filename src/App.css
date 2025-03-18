@@ -97,6 +97,7 @@ button.boton:hover {
   flex-direction: row;
   justify-content: flex-end;
 }
+
 .login {
   display: flex;
   flex-direction: row;

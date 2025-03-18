@@ -6,37 +6,51 @@ export default class ConsultasAPI {
     page,
     pageSize,
     columnFilters,
-    tipo,
-    motivo,
-    fecha_liquidacion,
-    liquidacion,
+    fechaDesde,
+    fechaHasta,
     estado,
-    plazo,
-    fecha_desde,
-    fecha_hasta
+    tipo,
+    zona,
+    localidad,
+    sorting,
+    fechaExceptuada,
+    sorteo,
+    titular,
+    apellido,
+    agencia
   ) {
     return Request.get(
       url +
         "?offset=" +
-        page * 5 +
-        "&filters=" +
-        JSON.stringify(columnFilters ?? []) +
-        "&tipo=" +
-        tipo +
-        "&motivo=" +
-        motivo +
-        "&fecha_liquidacion=" +
-        fecha_liquidacion +
-        "&liquidacion=" +
-        liquidacion +
+        page * 10 +
+        "&fechaDesde=" +
+        (fechaDesde ? fechaDesde : null) +
+        "&fechaHasta=" +
+        (fechaHasta ? fechaHasta : null) +
         "&estado=" +
         estado +
-        "&plazo=" +
-        plazo +
-        "&fecha_desde=" +
-        fecha_desde +
-        "&fecha_hasta=" +
-        fecha_hasta
+        "&tipo=" +
+        tipo +
+        "&zona=" +
+        zona +
+        "&apellido=" +
+        apellido +
+        "&localidad=" +
+        localidad +
+        "&filters=" +
+        JSON.stringify(columnFilters ?? []) +
+        "&sorting=" +
+        JSON.stringify(sorting ?? []) +
+        "&fechaExceptuada=" +
+        (fechaExceptuada ? fechaExceptuada : null) +
+        "&sorteo=" +
+        sorteo +
+        "&titular=" +
+        titular +
+        "&agencia=" +
+        agencia
+
+      //  ,{params:{page:page, filters:JSON.stringify(columnFilters ?? [])}}
     )
       .then((response) => {
         return response;
@@ -85,6 +99,7 @@ export default class ConsultasAPI {
   }
 
   static CrearObjeto(url, objeto) {
+    // console.log(objeto);
     return Request.post(url, objeto)
       .then((response) => {
         return response;
