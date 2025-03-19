@@ -11,11 +11,11 @@ import {
 // import Datetime from "react-datetime";
 // import { MRT_Localization_ES } from "material-react-table/locales/es";
 import "react-datetime/css/react-datetime.css";
-import ConsultasAPI from "../../helpers/consultasAPI";
+import ConsultasAPI from "../../../helpers/consultasAPI";
 import moment from "moment";
 import Swal from "sweetalert2";
 
-export function ModalCargarProducto(props) {
+export function ModalCargarProveedor(props) {
   const URL_PRODUCTO = window.API_ROUTES.PRODUCTO;
   const URL_CATEGORIA = window.API_ROUTES.CATEGORIA;
   const URL_PROVEEDOR = window.API_ROUTES.PROVEEDOR;
@@ -111,7 +111,6 @@ export function ModalCargarProducto(props) {
               email: proveedor.email,
             });
           });
-          console.log(datos);
           setTablaProveedor(datos);
         }
       });
@@ -139,7 +138,7 @@ export function ModalCargarProducto(props) {
   return (
     <Modal show={props.show} size="xl">
       <Modal.Header closeButton onClick={handleClose}>
-        <Modal.Title> Agregar Rango</Modal.Title>
+        <Modal.Title> Cargar Proveedor</Modal.Title>
       </Modal.Header>
       <Form
         onSubmit={handleSubmit}
@@ -173,7 +172,7 @@ export function ModalCargarProducto(props) {
                 </Col>
                 <Col>
                   <Form.Group style={{ alignContent: "center" }}>
-                    <Form.Label>Precio:</Form.Label>
+                    <Form.Label>Teléfono:</Form.Label>
                     <Col>
                       <Form.Control
                         type="text"
@@ -194,55 +193,7 @@ export function ModalCargarProducto(props) {
                   <Form.Group
                     style={{ alignContent: "center", justifyContent: "center" }}
                   >
-                    <Form.Label>Categoría:</Form.Label>
-                    <Form.Select
-                      value={categoria ? categoria.id : ""}
-                      onChange={(event) => {
-                        handleTablaCategoriaChange(event.target.value);
-                      }}
-                      required
-                    >
-                      <option hidden>Elegir Categoria</option>
-                      {tablaCategoria.length > 0
-                        ? tablaCategoria.map((categoria) => (
-                            <option key={categoria.id} value={categoria.id}>
-                              {categoria.nombre}
-                            </option>
-                          ))
-                        : null}
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-                <Col>
-                  <Form.Group
-                    style={{ alignContent: "center", justifyContent: "center" }}
-                  >
-                    <Form.Label>Proveedor:</Form.Label>
-                    <Form.Select
-                      value={proveedor ? proveedor.id : ""}
-                      onChange={(event) => {
-                        handleTablaProveedorChange(event.target.value);
-                      }}
-                    >
-                      <option hidden>Elegir Proveedor</option>
-                      {tablaProveedor.length > 0
-                        ? tablaProveedor.map((proveedor) => (
-                            <option key={proveedor.id} value={proveedor.id}>
-                              {proveedor.nombre}
-                            </option>
-                          ))
-                        : null}
-                    </Form.Select>
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row className="mb-3">
-                <Col md={6}>
-                  <Form.Group
-                    style={{ alignContent: "center", justifyContent: "center" }}
-                  >
-                    <Form.Label>Stock:</Form.Label>
-
+                    <Form.Label>Email:</Form.Label>
                     <Form.Control
                       type="text"
                       value={stock}
@@ -273,19 +224,19 @@ export function ModalCargarProducto(props) {
           </Card>
         </Modal.Body>
         <Modal.Footer>
-          <Button className="btn botonCPA m-3" onClick={handleClose}>
+          <Button className="btn boton m-3" onClick={handleClose}>
             Cancelar
           </Button>
           <Button
-            className="btn botonCPA m-3"
+            className="btn boton m-3"
             // onClick={subirRango}
             type="submit"
           >
-            Generar Producto
+            Alta Proveedor
           </Button>
         </Modal.Footer>
       </Form>
     </Modal>
   );
 }
-export default ModalCargarProducto;
+export default ModalCargarProveedor;

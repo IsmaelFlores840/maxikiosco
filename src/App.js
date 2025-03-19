@@ -9,7 +9,8 @@ import LoginForm from "./components/views/Login";
 import Principal from "./components/views/Principal";
 import AuthHelper from "./helpers/authenticationHelper";
 import Reportes from "./components/views/Reportes";
-import Productos from "./components/views/Productos";
+import Productos from "./components/views/Productos/Productos";
+import Proveedores from "./components/views/Proveedores/Proveedor";
 import { ProtectedRoute } from "./components/common/ProtectedRoute";
 
 function App() {
@@ -82,6 +83,19 @@ function App() {
               errorRedirectTo="*"
             >
               <Productos rolUsuario={rol} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          exact
+          path="/Gestion-proveedores"
+          element={
+            <ProtectedRoute
+              isAllowed={rol === "ADMINISTRADOR"}
+              redirectTo="/Gestion-proveedores"
+              errorRedirectTo="*"
+            >
+              <Proveedores rolUsuario={rol} />
             </ProtectedRoute>
           }
         />

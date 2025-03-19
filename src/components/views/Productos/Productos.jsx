@@ -5,9 +5,9 @@ import { MaterialReactTable } from "material-react-table";
 import { MRT_Localization_ES } from "material-react-table/locales/es";
 import moment from "moment";
 import Datetime from "react-datetime";
-import BtnVolver from "../common/BtnVolver";
+import BtnVolver from "../../common/BtnVolver";
 import ModalCargarProducto from "./ModalCargarProducto";
-import ConsultasAPI from "../../helpers/consultasAPI";
+import ConsultasAPI from "../../../helpers/consultasAPI";
 
 // import { FaPlus } from "react-icons/fa";
 // import { FaEraser } from "react-icons/fa";
@@ -16,6 +16,7 @@ import { darken, IconButton } from "@mui/material";
 
 const Productos = (props) => {
   const URL_ROL = window.API_ROUTES.ROL;
+  const URL_CATEGORIA = window.API_ROUTES.CATEGORIA;
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -31,15 +32,11 @@ const Productos = (props) => {
     fechaComparar: null,
   });
 
-  // const [fecha, setFecha] = useState({
-  //   fechaMuestra: null,
-  //   fechaComparar: null,
-  // });
   const [modalCargarProducto, setModalCargarProducto] = useState(false);
   const [columnFilters, setColumnFilters] = useState([]);
   const [data, setData] = useState([]);
-  const [tipoCategoria, setTipoCategoria] = useState("");
-  const [tablaTipoCategoria, setTablaTipoCategoria] = useState([]);
+  const [categoria, setCategoria] = useState("");
+  const [tablaCategoria, setTablaCategoria] = useState([]);
   const datetimeRefHasta = useRef(null);
   const datetimeRefDesde = useRef(null);
   const [producto, setProducto] = useState("");
@@ -47,55 +44,24 @@ const Productos = (props) => {
   const [n, setN] = useState();
 
   useEffect(() => {
-    cargarTablaCategoria();
-    // cargarRol();
-    // cargarSorteos();
+    cargarCategoria();
   }, []);
 
-  // useEffect(() => {
-  //   console.log(tipoVenta);
-  // }, []);
-
-  const handleTablaCategoriaChange = (categoria) => {
-    setTipoCategoria(tablaTipoCategoria.filter((x) => x.id === categoria)[0]);
-  };
-  // const cargarRol = async () => {
-  //   const response = await ConsultasAPI.ObtenerObjeto(
-  //     URL_ROL + "busqueda/",
-  //     "ADMINISTRADOR"
-  //   );
-  //   console.log(response.data);
-  // };
-  const cargarSorteos = () => {
+  const cargarCategoria = () => {
     try {
-      ConsultasAPI.ListarObjetos(
-        URL_ROL,
-        pagination.pageIndex,
-        pagination.pageSize,
-        columnFilters,
-        fechaDesde.fechaMuestra,
-        fechaHasta.fechaMuestra,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
-      ).then((response) => {
-        setCount(response.data.count);
-        console.log(response.data);
-        setN(response.data.count / 10);
-        let Roles = response.data.results;
-        if (Roles) {
+      ConsultasAPI.ListarObjetos(URL_CATEGORIA).then((response) => {
+        let categorias = response.data.results;
+        if (categorias) {
           let datos = [];
-          Roles.forEach((sorteo) => {
+          categorias.forEach((categoria) => {
             datos.push({
-              id: sorteo.id,
-              nombre: sorteo.nombre,
+              id: categoria.id,
+              nombre: categoria.nombre,
+              descripcion: categoria.descripcion,
             });
           });
-          setData(datos);
+          // console.log(datos);
+          setTablaCategoria(datos);
         }
       });
     } catch (error) {
@@ -103,22 +69,8 @@ const Productos = (props) => {
     }
   };
 
-  const cargarTablaCategoria = () => {
-    let tipoCategoria = [];
-    tipoCategoria.push({
-      id: 1,
-      detalle: "Categoria 1",
-    });
-    tipoCategoria.push({
-      id: 2,
-      detalle: "Categoria 2",
-    });
-    tipoCategoria.push({
-      id: 3,
-      detalle: "Categoria 3",
-    });
-
-    setTablaTipoCategoria(tipoCategoria);
+  const handleTablaCategoriaChange = (categoria) => {
+    setCategoria(tablaCategoria.filter((x) => x.id === parseInt(categoria))[0]);
   };
   //Columnas de la tabla Venta Mostrador
   const columns = useMemo(() => [
@@ -266,16 +218,17 @@ const Productos = (props) => {
               >
                 <Form.Label>Categoría:</Form.Label>
                 <Form.Select
-                  value={tipoCategoria}
+                  value={categoria ? categoria.id : ""}
                   onChange={(event) => {
                     handleTablaCategoriaChange(event.target.value);
                   }}
+                  required
                 >
                   <option hidden>Elegir Categoria</option>
-                  {tablaTipoCategoria.length > 0
-                    ? tablaTipoCategoria.map((categoria) => (
+                  {tablaCategoria.length > 0
+                    ? tablaCategoria.map((categoria) => (
                         <option key={categoria.id} value={categoria.id}>
-                          {categoria.detalle}
+                          {categoria.nombre}
                         </option>
                       ))
                     : null}

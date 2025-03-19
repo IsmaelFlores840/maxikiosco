@@ -1,7 +1,7 @@
 import Request from "./request";
 
 export default class ConsultasAPI {
-  static ListarObjetos(
+  static ListarObjetos( //modificar los parametros
     url,
     page,
     pageSize,
