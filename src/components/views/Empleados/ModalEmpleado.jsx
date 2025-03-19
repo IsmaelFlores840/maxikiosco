@@ -16,9 +16,9 @@ import ConsultasAPI from "../../../helpers/consultasAPI";
 import "react-datetime/css/react-datetime.css";
 import Swal from "sweetalert2";
 
-export function ModalCargarProveedor(props) {
-  const URL_PROVEEDOR = window.API_ROUTES.PROVEEDOR;
-  // const URL_ROL = window.API_ROUTES.ROL;
+export function ModalEmpleado(props) {
+  const URL_EMPLEADO = window.API_ROUTES.EMPLEADO;
+  const URL_ROL = window.API_ROUTES.ROL;
 
   const [nombre, setNombre] = useState("");
   const [direccion, setDireccion] = useState("");
@@ -44,17 +44,17 @@ export function ModalCargarProveedor(props) {
         );
         return;
       }
-      const proveedor = {
+      const empleado = {
         nombre: nombre,
         direccion: direccion,
         telefono: telefono,
         email: email,
       };
-      await ConsultasAPI.CrearObjeto(URL_PROVEEDOR, proveedor).then(
+      await ConsultasAPI.CrearObjeto(URL_EMPLEADO, empleado).then(
         (response) => {
           Swal.fire({
             title: "Crecion exitosa",
-            text: "Proveedor generado con exito",
+            text: "Empleado generado con exito",
             icon: "success",
             showCancelButton: true,
             showConfirmButton: false,
@@ -65,10 +65,6 @@ export function ModalCargarProveedor(props) {
         }
       );
     } catch (error) {
-      // Captura el error y muestra una notificación
-      // console.error("Error al crear el proveedor:", error);
-
-      // Verifica si el error es debido a un correo inválido
       if (error.response && error.response.data && error.response.data.email) {
         Notificaciones.notificacion(
           "Error: Correo electrónico inválido. Verifique los campos."
@@ -89,7 +85,7 @@ export function ModalCargarProveedor(props) {
   return (
     <Modal show={props.show} size="xl">
       <Modal.Header closeButton onClick={handleClose}>
-        <Modal.Title> Cargar Proveedor</Modal.Title>
+        <Modal.Title> Cargar Empleado</Modal.Title>
       </Modal.Header>
       <Form
         onSubmit={handleSubmit}
@@ -188,4 +184,4 @@ export function ModalCargarProveedor(props) {
     </Modal>
   );
 }
-export default ModalCargarProveedor;
+export default ModalEmpleado;

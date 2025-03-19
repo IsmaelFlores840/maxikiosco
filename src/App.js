@@ -11,6 +11,7 @@ import AuthHelper from "./helpers/authenticationHelper";
 import Reportes from "./components/views/Reportes";
 import Productos from "./components/views/Productos/Productos";
 import Proveedores from "./components/views/Proveedores/Proveedor";
+import Empleado from "./components/views/Empleados/Empleado";
 import { ProtectedRoute } from "./components/common/ProtectedRoute";
 
 function App() {
@@ -83,6 +84,19 @@ function App() {
               errorRedirectTo="*"
             >
               <Productos rolUsuario={rol} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          exact
+          path="/Gestion-empleados"
+          element={
+            <ProtectedRoute
+              isAllowed={rol === "ADMINISTRADOR"}
+              redirectTo="/Gestion-empleados"
+              errorRedirectTo="*"
+            >
+              <Empleado rolUsuario={rol} />
             </ProtectedRoute>
           }
         />

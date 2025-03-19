@@ -121,7 +121,7 @@ const Principal = (props) => {
               <OpcionInicio
                 // imagen={require("../../img/MenuPrincipal/logotuqui.png")}
                 texto={"Gestión de Empleados"}
-                ruta={"/Gestion-Empleados"}
+                ruta={"/Gestion-empleados"}
               />
             </Col>
           </>

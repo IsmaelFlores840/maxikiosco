@@ -12,25 +12,13 @@ import ConsultasAPI from "../../helpers/consultasAPI";
 import { Toaster } from "react-hot-toast";
 
 const LoginForm = (props) => {
-  const URL_ROL = window.API_ROUTES.ROL;
 
-  // useEffect(() => {
-  //   obtenerRol();
-  //   console.log(URL_ROL);
-  // }, []);
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
-  // const obtenerRol = async () => {
-  //   const response = await ConsultasAPI.ObtenerObjeto(
-  //     URL_ROL + "busqueda/",
-  //     "Administrador"
-  //   );
-  //   console.log(response.data);
-  // };
   function loginAcceder(values) {
     LoginApi.Login(values.email, values.password)
       .then((response) => {

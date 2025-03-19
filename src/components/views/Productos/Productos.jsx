@@ -1,14 +1,14 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
 import { Container, Col, Row, Card, Button, Form } from "react-bootstrap";
-import "react-datetime/css/react-datetime.css";
-import { MaterialReactTable } from "material-react-table";
 import { MRT_Localization_ES } from "material-react-table/locales/es";
-import moment from "moment";
-import Datetime from "react-datetime";
-import BtnVolver from "../../common/BtnVolver";
-import ModalCargarProducto from "./ModalCargarProducto";
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import { MaterialReactTable } from "material-react-table";
 import ConsultasAPI from "../../../helpers/consultasAPI";
+import ModalCargarProducto from "./ModalCargarProducto";
+import "react-datetime/css/react-datetime.css";
+import BtnVolver from "../../common/BtnVolver";
+import Datetime from "react-datetime";
 
+// import moment from "moment";
 // import { FaPlus } from "react-icons/fa";
 // import { FaEraser } from "react-icons/fa";
 

@@ -2,8 +2,9 @@ import { Container, Col, Row, Card, Button, Form } from "react-bootstrap";
 import { MRT_Localization_ES } from "material-react-table/locales/es";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { MaterialReactTable } from "material-react-table";
-import ModalCargarProveedor from "./ModalCargarProveedor";
+import ModalCargarProveedor from "./ModalEmpleado";
 import ConsultasAPI from "../../../helpers/consultasAPI";
+import { darken, IconButton } from "@mui/material";
 import "react-datetime/css/react-datetime.css";
 import BtnVolver from "../../common/BtnVolver";
 
@@ -12,9 +13,7 @@ import BtnVolver from "../../common/BtnVolver";
 // import { FaPlus } from "react-icons/fa";
 // import { FaEraser } from "react-icons/fa";
 
-import { darken, IconButton } from "@mui/material";
-
-const Proveedores = (props) => {
+const Empleados = (props) => {
   const URL_PROVEEDOR = window.API_ROUTES.PROVEEDOR;
 
   const [pagination, setPagination] = useState({
@@ -110,7 +109,7 @@ const Proveedores = (props) => {
             alignItems: "center", // Centra verticalmente los elementos hijos
           }}
         >
-          <h2 className="py-2 fw ml-10">Proveedores</h2>
+          <h2 className="py-2 fw ml-10">Empleados</h2>
 
           <Button
             className="btn"
@@ -243,4 +242,4 @@ const Proveedores = (props) => {
   );
 };
 
-export default Proveedores;
+export default Empleados;
