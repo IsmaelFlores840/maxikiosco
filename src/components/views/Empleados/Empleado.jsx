@@ -2,7 +2,7 @@ import { Container, Col, Row, Card, Button, Form } from "react-bootstrap";
 import { MRT_Localization_ES } from "material-react-table/locales/es";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { MaterialReactTable } from "material-react-table";
-import ModalCargarProveedor from "./ModalEmpleado";
+import ModalCargarEmpleado from "./ModalEmpleado";
 import ConsultasAPI from "../../../helpers/consultasAPI";
 import { darken, IconButton } from "@mui/material";
 import "react-datetime/css/react-datetime.css";
@@ -14,7 +14,7 @@ import BtnVolver from "../../common/BtnVolver";
 // import { FaEraser } from "react-icons/fa";
 
 const Empleados = (props) => {
-  const URL_PROVEEDOR = window.API_ROUTES.PROVEEDOR;
+  const URL_USUARIOS = window.API_ROUTES.USUARIOS;
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -24,21 +24,21 @@ const Empleados = (props) => {
   const [columnFilters, setColumnFilters] = useState([]);
   const [data, setData] = useState([]);
 
-  const [modalCargarProveedor, setModalCargarProveedor] = useState(false);
+  const [modalCargarEmpleados, setModalCargarEmpleados] = useState(false);
   const [email, setEmail] = useState("");
   const [nombre, setNombre] = useState("");
 
   useEffect(() => {
-    cargarProveedores();
-  }, [modalCargarProveedor, email, nombre]);
+    cargarEmpleados();
+  }, [modalCargarEmpleados, email, nombre]);
 
-  const cargarProveedores = () => {
+  const cargarEmpleados = () => {
     try {
       ConsultasAPI.ListarObjetos(
-        URL_PROVEEDOR,
+        URL_USUARIOS,
         pagination.pageIndex,
         pagination.pageSize,
-        columnFilters,
+        // columnFilters,
         null,
         null,
         null,
@@ -46,20 +46,22 @@ const Empleados = (props) => {
         null,
         null
       ).then((response) => {
-        let proveedores = response.data.results;
+        let usuarios = response.data.results;
         setCount(response.data.count);
-        if (proveedores) {
+        console.log(usuarios);
+        if (usuarios) {
           let datos = [];
-          proveedores.forEach((proveedor) => {
+          usuarios.forEach((usuario) => {
             datos.push({
-              id: proveedor.id,
-              nombre: proveedor.nombre,
-              direccion: proveedor.direccion,
-              telefono: proveedor.telefono,
-              email: proveedor.email,
+              id: usuario.id,
+              nombre: usuario.nombre,
+              apellido: usuario.apellido,
+              documento: usuario.documento,
+              telefono: usuario.telefono,
+              email: usuario.email,
+              rol: usuario.rol_detalle.nombre,
             });
           });
-          // console.log(datos);
           setData(datos);
         }
       });
@@ -76,27 +78,33 @@ const Empleados = (props) => {
       size: 15,
     },
     {
-      header: "Teléfono",
-      accessorKey: "telefono",
+      header: "Apellido",
+      accessorKey: "apellido",
       size: 20,
     },
-    {
-      header: "Dirección",
-      accessorKey: "direcciom",
-      size: 20,
-    },
+
     {
       header: "Email",
       accessorKey: "email",
       size: 20,
     },
+    {
+      header: "Documento",
+      accessorKey: "documento",
+      size: 20,
+    },
+    {
+      header: "Rol",
+      accessorKey: "rol",
+      size: 20,
+    },
   ]);
 
   const handleOpenModalAgregarProveedor = () => {
-    setModalCargarProveedor(true);
+    setModalCargarEmpleados(true);
   };
   const handleCloseModalAgregarProveedor = () => {
-    setModalCargarProveedor(false);
+    setModalCargarEmpleados(false);
   };
 
   return (
@@ -234,9 +242,9 @@ const Empleados = (props) => {
         </Card.Body>
       </Card>
 
-      <ModalCargarProveedor
+      <ModalCargarEmpleado
         onClose={handleCloseModalAgregarProveedor}
-        show={modalCargarProveedor}
+        show={modalCargarEmpleados}
       />
     </Container>
   );

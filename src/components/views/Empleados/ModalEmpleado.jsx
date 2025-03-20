@@ -21,9 +21,13 @@ export function ModalEmpleado(props) {
   const URL_ROL = window.API_ROUTES.ROL;
 
   const [nombre, setNombre] = useState("");
-  const [direccion, setDireccion] = useState("");
+  const [apellido, setApellido] = useState("");
   const [telefono, setTelefono] = useState("");
+  const [direccion, setDireccion] = useState("");
   const [email, setEmail] = useState("");
+  const [rol, setRol] = useState("");
+  const [usuario, setUsuario] = useState("");
+  const [contrasenia, setContrasenia] = useState("");
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -98,13 +102,49 @@ export function ModalEmpleado(props) {
               <Row className="mb-3">
                 <Col>
                   <Form.Group
-                    // md="3"
                     style={{
                       alignContent: "center",
                       justifyContent: "center",
                     }}
                   >
                     <Form.Label>Nombre:</Form.Label>
+                    <Col>
+                      <Form.Control
+                        type="text"
+                        value={nombre}
+                        onChange={(e) => {
+                          setNombre(e.target.value);
+                        }}
+                        required
+                      />
+                    </Col>
+                  </Form.Group>
+                </Col>
+                <Col>
+                  <Form.Group style={{ alignContent: "center" }}>
+                    <Form.Label>Apellido:</Form.Label>
+                    <Col>
+                      <Form.Control
+                        type="text"
+                        value={apellido}
+                        onChange={(e) => {
+                          setApellido(e.target.value);
+                        }}
+                        required
+                      />
+                    </Col>
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className="mb-3">
+                <Col>
+                  <Form.Group
+                    style={{
+                      alignContent: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Form.Label>Rol:</Form.Label>
                     <Col>
                       <Form.Control
                         type="text"
@@ -135,6 +175,18 @@ export function ModalEmpleado(props) {
                   </Form.Group>
                 </Col>
               </Row>
+              <Row className="mb-3" style={{ justifyContent: "center" }}>
+                <Col>
+                  <Form.Group>
+                    <Form.Label>Dirección:</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={direccion}
+                      onChange={(e) => setDireccion(e.target.value)}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
               <Row className="mb-3">
                 <Col>
                   <Form.Group
@@ -155,12 +207,11 @@ export function ModalEmpleado(props) {
               <Row className="mb-3" style={{ justifyContent: "center" }}>
                 <Col>
                   <Form.Group>
-                    <Form.Label>Dirección:</Form.Label>
+                    <Form.Label>Contraseña:</Form.Label>
                     <Form.Control
                       type="text"
-                      value={direccion}
-                      onChange={(e) => setDireccion(e.target.value)}
-                      required
+                      value={contrasenia}
+                      onChange={(e) => setContrasenia(e.target.value)}
                     />
                   </Form.Group>
                 </Col>
@@ -172,12 +223,8 @@ export function ModalEmpleado(props) {
           <Button className="btn boton m-3" onClick={handleClose}>
             Cancelar
           </Button>
-          <Button
-            className="btn boton m-3"
-            // onClick={subirRango}
-            type="submit"
-          >
-            Alta Proveedor
+          <Button className="btn boton m-3" type="submit">
+            Alta Empleado
           </Button>
         </Modal.Footer>
       </Form>
