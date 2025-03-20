@@ -7,6 +7,8 @@ import ConsultasAPI from "../../../helpers/consultasAPI";
 import { darken, IconButton } from "@mui/material";
 import "react-datetime/css/react-datetime.css";
 import BtnVolver from "../../common/BtnVolver";
+import { Edit, Visibility, Delete } from "@mui/icons-material";
+import Swal from "sweetalert2";
 
 // import moment from "moment";
 // import Datetime from "react-datetime";
@@ -15,6 +17,7 @@ import BtnVolver from "../../common/BtnVolver";
 
 const Empleados = (props) => {
   const URL_USUARIOS = window.API_ROUTES.USUARIOS;
+  const rolUser = props.rolUsuario;
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -27,6 +30,8 @@ const Empleados = (props) => {
   const [modalCargarEmpleados, setModalCargarEmpleados] = useState(false);
   const [email, setEmail] = useState("");
   const [nombre, setNombre] = useState("");
+  const [datosEmpleado, setDatossEmpleado] = useState([]);
+  const [tituloModal, setTituloModal] = useState("");
 
   useEffect(() => {
     cargarEmpleados();
@@ -48,7 +53,6 @@ const Empleados = (props) => {
       ).then((response) => {
         let usuarios = response.data.results;
         setCount(response.data.count);
-        console.log(usuarios);
         if (usuarios) {
           let datos = [];
           usuarios.forEach((usuario) => {
@@ -100,11 +104,59 @@ const Empleados = (props) => {
     },
   ]);
 
-  const handleOpenModalAgregarProveedor = () => {
+  const handleOpenModalEmpleado = () => {
+    setTituloModal("Agregar");
     setModalCargarEmpleados(true);
   };
-  const handleCloseModalAgregarProveedor = () => {
+  const handleCloseModalEmpleado = () => {
     setModalCargarEmpleados(false);
+  };
+
+  const handleEliminarEmpleado = async (row) => {
+    await Swal.fire({
+      title: "Esta seguro de borrar este empleado?",
+      text: "",
+      icon: "warning",
+      showCancelButton: true,
+      showConfirmButton: true,
+      confirmButtonColor: "#008185",
+      cancelButtonColor: "#EC1B23",
+      confirmButtonText: "Aceptar",
+      cancelButtonText: "Cancelar",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        ConsultasAPI.BorrarObjeto(URL_USUARIOS, row.id)
+          .then((response) => {
+            if (response.status === 204) {
+              Swal.fire({
+                title: "Empleado Eliminado Exitosamente",
+                text: "Esta acción no se podrá deshacer",
+                icon: "success",
+              });
+            } else {
+              Swal.fire({
+                title: "Error: problema con la eliminación",
+                text: "El empleado no se pudo borrar correctamente",
+                icon: "error",
+              });
+            }
+          })
+          .then(() => {
+            cargarEmpleados(); // Llamo a cargarTabla después de la eliminación
+          });
+      }
+    });
+  };
+
+  const handleEditarEmpleado = async (row) => {
+    console.log(row.id);
+
+    const empleado = await ConsultasAPI.ObtenerObjeto(URL_USUARIOS, row.id);
+    setDatossEmpleado(empleado.data);
+
+    // setDatosLiquidacion(liq.data);
+    setTituloModal("Editar");
+    setModalCargarEmpleados(true);
   };
 
   return (
@@ -126,7 +178,7 @@ const Empleados = (props) => {
               alignItems: "center",
               marginRight: 10,
             }}
-            onClick={handleOpenModalAgregarProveedor}
+            onClick={handleOpenModalEmpleado}
           >
             Agregar
           </Button>
@@ -210,9 +262,36 @@ const Empleados = (props) => {
               enableGlobalFilter={false} //turn off a feature
               enableFilters={false}
               localization={MRT_Localization_ES}
+              enableRowActions
               positionActionsColumn="last"
-              // manualPagination
-              // manualFiltering
+              renderRowActions={({ row }) => (
+                <div className="d-flex">
+                  {rolUser === "ADMINISTRADOR" ? (
+                    <IconButton
+                      onClick={() => {
+                        handleEditarEmpleado(row.original);
+                      }}
+                      title="Editar"
+                      variant="outline-info"
+                    >
+                      <Edit />
+                    </IconButton>
+                  ) : null}
+                  {rolUser === "ADMINISTRADOR" ? (
+                    <IconButton
+                      onClick={() => {
+                        handleEliminarEmpleado(row.original);
+                      }}
+                      title="Eliminar"
+                      variant="outline-info"
+                    >
+                      <Delete />
+                    </IconButton>
+                  ) : null}
+                </div>
+              )}
+              manualPagination
+              manualFiltering
               muiTablePaginationProps={{
                 rowsPerPageOptions: [10],
               }}
@@ -243,8 +322,10 @@ const Empleados = (props) => {
       </Card>
 
       <ModalCargarEmpleado
-        onClose={handleCloseModalAgregarProveedor}
+        onClose={handleCloseModalEmpleado}
         show={modalCargarEmpleados}
+        datosEmpleado={datosEmpleado}
+        tituloModal={tituloModal}
       />
     </Container>
   );

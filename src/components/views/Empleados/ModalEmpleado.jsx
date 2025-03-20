@@ -17,29 +17,44 @@ import "react-datetime/css/react-datetime.css";
 import Swal from "sweetalert2";
 
 export function ModalEmpleado(props) {
-  const URL_EMPLEADO = window.API_ROUTES.EMPLEADO;
+  const URL_USUARIOS = window.API_ROUTES.USUARIOS;
   const URL_ROL = window.API_ROUTES.ROL;
 
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [direccion, setDireccion] = useState("");
+  const [documento, setDocumento] = useState("");
   const [email, setEmail] = useState("");
   const [rol, setRol] = useState("");
+  const [tablaRoles, setTablaRoles] = useState([]);
   const [usuario, setUsuario] = useState("");
   const [contrasenia, setContrasenia] = useState("");
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    crearProveedor();
+    crearEmpleado();
   };
 
   const handleClose = () => {
     clear();
     props.onClose();
   };
+  useEffect(() => {
+    cargarRol();
+    if (props.datosEmpleado) {
+      // cargamos los datos en caso de que se quiera editar el empleado
+      setNombre(props.datosEmpleado.nombre ? props.datosEmpleado.nombre : "");
+      setApellido(
+        props.datosEmpleado.apellido ? props.datosEmpleado.apellido : ""
+      );
+      setDocumento(
+        props.datosEmpleado.documento ? props.datosEmpleado.documento : ""
+      );
+      setEmail(props.datosEmpleado.email ? props.datosEmpleado.email : "");
+      setRol(props.datosEmpleado.rol ? props.datosEmpleado.rol : "");
+    }
+  }, [props.show]);
 
-  const crearProveedor = async () => {
+  const crearEmpleado = async () => {
     try {
       const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!regex.test(email)) {
@@ -50,24 +65,24 @@ export function ModalEmpleado(props) {
       }
       const empleado = {
         nombre: nombre,
-        direccion: direccion,
-        telefono: telefono,
+        apellido: apellido,
+        documento: documento,
         email: email,
+        contrasenia: contrasenia,
+        rol: rol,
       };
-      await ConsultasAPI.CrearObjeto(URL_EMPLEADO, empleado).then(
-        (response) => {
-          Swal.fire({
-            title: "Crecion exitosa",
-            text: "Empleado generado con exito",
-            icon: "success",
-            showCancelButton: true,
-            showConfirmButton: false,
-            cancelButtonColor: "#008185",
-            cancelButtonText: "Aceptar",
-          });
-          clear();
-        }
-      );
+      await ConsultasAPI.CrearObjeto(URL_USUARIOS, empleado).then(() => {
+        Swal.fire({
+          title: "Crecion exitosa",
+          text: "Empleado generado con exito",
+          icon: "success",
+          showCancelButton: true,
+          showConfirmButton: false,
+          cancelButtonColor: "#008185",
+          cancelButtonText: "Aceptar",
+        });
+        clear();
+      });
     } catch (error) {
       if (error.response && error.response.data && error.response.data.email) {
         Notificaciones.notificacion(
@@ -79,17 +94,41 @@ export function ModalEmpleado(props) {
     }
   };
 
+  const cargarRol = () => {
+    try {
+      ConsultasAPI.ListarObjetos(URL_ROL).then((response) => {
+        let roles = response.data.results;
+        if (roles) {
+          let datos = [];
+          roles.forEach((rol) => {
+            datos.push({
+              id: rol.id,
+              nombre: rol.nombre,
+            });
+          });
+          // console.log(datos);
+          setTablaRoles(datos);
+        }
+      });
+    } catch (error) {
+      console.log("Problemas al mostrar los roles", error);
+    }
+  };
+
+  const handleTablaRolesChange = (rol) => {
+    setRol(tablaRoles.filter((x) => x.id === parseInt(rol))[0]);
+  };
+
   const clear = () => {
-    setDireccion("");
     setNombre("");
-    setTelefono("");
+    setDocumento("");
     setEmail("");
   };
 
   return (
     <Modal show={props.show} size="xl">
       <Modal.Header closeButton onClick={handleClose}>
-        <Modal.Title> Cargar Empleado</Modal.Title>
+        <Modal.Title> {props.tituloModal} Empleado</Modal.Title>
       </Modal.Header>
       <Form
         onSubmit={handleSubmit}
@@ -146,44 +185,40 @@ export function ModalEmpleado(props) {
                   >
                     <Form.Label>Rol:</Form.Label>
                     <Col>
-                      <Form.Control
-                        type="text"
-                        value={nombre}
-                        onChange={(e) => {
-                          setNombre(e.target.value);
+                      <Form.Select
+                        value={rol ? rol.id : ""}
+                        onChange={(event) => {
+                          handleTablaRolesChange(event.target.value);
                         }}
                         required
-                      />
+                      >
+                        <option hidden>Elegir Rol</option>
+                        {tablaRoles.length > 0
+                          ? tablaRoles.map((rol) => (
+                              <option key={rol.id} value={rol.id}>
+                                {rol.nombre}
+                              </option>
+                            ))
+                          : null}
+                      </Form.Select>
                     </Col>
                   </Form.Group>
                 </Col>
                 <Col>
                   <Form.Group style={{ alignContent: "center" }}>
-                    <Form.Label>Teléfono:</Form.Label>
+                    <Form.Label>Documento:</Form.Label>
                     <Col>
                       <Form.Control
                         type="text"
-                        value={telefono}
+                        value={documento}
                         onChange={(e) => {
                           const inputValue = e.target.value;
                           const precioVenta = inputValue.replace(/\D/g, "");
-                          setTelefono(precioVenta);
+                          setDocumento(precioVenta);
                         }}
                         required
                       />
                     </Col>
-                  </Form.Group>
-                </Col>
-              </Row>
-              <Row className="mb-3" style={{ justifyContent: "center" }}>
-                <Col>
-                  <Form.Group>
-                    <Form.Label>Dirección:</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={direccion}
-                      onChange={(e) => setDireccion(e.target.value)}
-                    />
                   </Form.Group>
                 </Col>
               </Row>

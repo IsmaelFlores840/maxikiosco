@@ -83,7 +83,7 @@ const Proveedores = (props) => {
     },
     {
       header: "Dirección",
-      accessorKey: "direcciom",
+      accessorKey: "direccion",
       size: 20,
     },
     {

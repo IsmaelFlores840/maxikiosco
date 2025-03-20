@@ -15,7 +15,6 @@ import Datetime from "react-datetime";
 import { darken, IconButton } from "@mui/material";
 
 const Productos = (props) => {
-  const URL_ROL = window.API_ROUTES.ROL;
   const URL_CATEGORIA = window.API_ROUTES.CATEGORIA;
 
   const [pagination, setPagination] = useState({
@@ -65,7 +64,7 @@ const Productos = (props) => {
         }
       });
     } catch (error) {
-      console.log("Problemas al mostrar cartones no registrados", error);
+      console.log("Problemas al mostrar las categorias", error);
     }
   };
 
