@@ -6,6 +6,8 @@ import ModalCargarProveedor from "./ModalCargarProveedor";
 import ConsultasAPI from "../../../helpers/consultasAPI";
 import "react-datetime/css/react-datetime.css";
 import BtnVolver from "../../common/BtnVolver";
+import { Edit, Visibility, Delete } from "@mui/icons-material";
+import Swal from "sweetalert2";
 
 // import moment from "moment";
 // import Datetime from "react-datetime";
@@ -15,8 +17,8 @@ import BtnVolver from "../../common/BtnVolver";
 import { darken, IconButton } from "@mui/material";
 
 const Proveedores = (props) => {
+  const rolUser = props.rolUsuario;
   const URL_PROVEEDOR = window.API_ROUTES.PROVEEDOR;
-
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -28,6 +30,8 @@ const Proveedores = (props) => {
   const [modalCargarProveedor, setModalCargarProveedor] = useState(false);
   const [email, setEmail] = useState("");
   const [nombre, setNombre] = useState("");
+  const [tituloModal, setTituloModal] = useState("");
+  const [datosProveedor, setDatosProveedor] = useState([]);
 
   useEffect(() => {
     cargarProveedores();
@@ -94,10 +98,56 @@ const Proveedores = (props) => {
   ]);
 
   const handleOpenModalAgregarProveedor = () => {
+    setTituloModal("Agregar");
     setModalCargarProveedor(true);
   };
   const handleCloseModalAgregarProveedor = () => {
+    setDatosProveedor([]);
     setModalCargarProveedor(false);
+  };
+
+  const handleEliminarProveedor = async (row) => {
+    await Swal.fire({
+      title: "Esta seguro de borrar este proveedor?",
+      text: "",
+      icon: "warning",
+      showCancelButton: true,
+      showConfirmButton: true,
+      confirmButtonColor: "#008185",
+      cancelButtonColor: "#EC1B23",
+      confirmButtonText: "Aceptar",
+      cancelButtonText: "Cancelar",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        ConsultasAPI.BorrarObjeto(URL_PROVEEDOR, row.id)
+          .then((response) => {
+            if (response.status === 204) {
+              Swal.fire({
+                title: "Proveedor Eliminado Exitosamente",
+                text: "Esta acción no se podrá deshacer",
+                icon: "success",
+              });
+            } else {
+              Swal.fire({
+                title: "Error: problema con la eliminación",
+                text: "El empleado no se pudo borrar correctamente",
+                icon: "error",
+              });
+            }
+          })
+          .then(() => {
+            cargarProveedores(); // Llamo a cargarTabla después de la eliminación
+          });
+      }
+    });
+  };
+
+  const handleEditarProveedor = async (row) => {
+    const proveedor = await ConsultasAPI.ObtenerObjeto(URL_PROVEEDOR, row.id);
+    setDatosProveedor(proveedor.data);
+
+    setTituloModal("Editar");
+    setModalCargarProveedor(true);
   };
 
   return (
@@ -203,7 +253,34 @@ const Proveedores = (props) => {
               enableGlobalFilter={false} //turn off a feature
               enableFilters={false}
               localization={MRT_Localization_ES}
+              enableRowActions
               positionActionsColumn="last"
+              renderRowActions={({ row }) => (
+                <div className="d-flex">
+                  {rolUser === "ADMINISTRADOR" ? (
+                    <IconButton
+                      onClick={() => {
+                        handleEditarProveedor(row.original);
+                      }}
+                      title="Editar"
+                      variant="outline-info"
+                    >
+                      <Edit />
+                    </IconButton>
+                  ) : null}
+                  {rolUser === "ADMINISTRADOR" ? (
+                    <IconButton
+                      onClick={() => {
+                        handleEliminarProveedor(row.original);
+                      }}
+                      title="Eliminar"
+                      variant="outline-info"
+                    >
+                      <Delete />
+                    </IconButton>
+                  ) : null}
+                </div>
+              )}
               // manualPagination
               // manualFiltering
               muiTablePaginationProps={{
@@ -238,6 +315,8 @@ const Proveedores = (props) => {
       <ModalCargarProveedor
         onClose={handleCloseModalAgregarProveedor}
         show={modalCargarProveedor}
+        tituloModal={tituloModal}
+        datosProveedor={datosProveedor}
       />
     </Container>
   );

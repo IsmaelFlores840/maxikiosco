@@ -46,30 +46,50 @@ export function ModalCargarProducto(props) {
 
   const crearProducto = async () => {
     try {
-      const producto = {
-        nombre: nombre,
-        descripcion: descripcion,
-        precio_venta: precio,
-        stock: stock,
-        categoria: categoria,
-        // proveedor: proveedor,
-      };
-      await ConsultasAPI.CrearObjeto(URL_PRODUCTO, producto).then(
-        (response) => {
-          Swal.fire({
-            title: "Crecion exitosa",
-            text: "producto generado con exito",
-            icon: "success",
-            showCancelButton: true,
-            showConfirmButton: false,
-            cancelButtonColor: "#008185",
-            cancelButtonText: "Aceptar",
-          });
-          clear();
-        }
-      );
+      const result = await Swal.fire({
+        title: "¿Está seguro de crear este producto?",
+        text: "",
+        icon: "warning",
+        showCancelButton: true,
+        showConfirmButton: true,
+        confirmButtonColor: "#008185",
+        cancelButtonColor: "#EC1B23",
+        confirmButtonText: "Aceptar",
+        cancelButtonText: "Cancelar",
+      });
+
+      if (result.isConfirmed) {
+        const producto = {
+          nombre: nombre,
+          descripcion: descripcion,
+          precio_venta: precio,
+          stock: stock,
+          categoria: categoria,
+          // proveedor: proveedor,
+        };
+
+        await ConsultasAPI.CrearObjeto(URL_PRODUCTO, producto);
+
+        Swal.fire({
+          title: "Creación exitosa",
+          text: "Producto generado con éxito",
+          icon: "success",
+          showCancelButton: true,
+          showConfirmButton: false,
+          cancelButtonColor: "#008185",
+          cancelButtonText: "Aceptar",
+        });
+
+        clear();
+      }
     } catch (error) {
       console.error("Error al crear el producto:", error);
+      Swal.fire({
+        title: "Error",
+        text: "Hubo un problema al crear el producto",
+        icon: "error",
+        confirmButtonText: "Aceptar",
+      });
       throw error;
     }
   };
@@ -275,11 +295,7 @@ export function ModalCargarProducto(props) {
           <Button className="btn boton m-3" onClick={handleClose}>
             Cancelar
           </Button>
-          <Button
-            className="btn boton m-3"
-            // onClick={subirRango}
-            type="submit"
-          >
+          <Button className="btn boton m-3" type="submit">
             Generar Producto
           </Button>
         </Modal.Footer>

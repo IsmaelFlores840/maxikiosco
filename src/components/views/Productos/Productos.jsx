@@ -16,6 +16,7 @@ import { darken, IconButton } from "@mui/material";
 
 const Productos = (props) => {
   const URL_CATEGORIA = window.API_ROUTES.CATEGORIA;
+  const URL_PRODUCTO = window.API_ROUTES.PRODUCTO;
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -45,6 +46,14 @@ const Productos = (props) => {
   useEffect(() => {
     cargarCategoria();
   }, []);
+  useEffect(() => {
+    cargarProductos();
+  }, [
+    fechaDesde.fechaMuestra,
+    fechaHasta.fechaMuestra,
+    producto,
+    modalCargarProducto,
+  ]);
 
   const cargarCategoria = () => {
     try {
@@ -100,7 +109,7 @@ const Productos = (props) => {
     },
     {
       header: "Total",
-      accessorKey: "Tolal",
+      accessorKey: "total",
       size: 20,
     },
   ]);
@@ -123,17 +132,51 @@ const Productos = (props) => {
   const handleCloseModalAgregarProducto = () => {
     setModalCargarProducto(false);
   };
-  // useEffect(() => {
-  //   const currentDate = moment().format("DD/MM/YYYY");
-  //   setFecha({ fechaMuestra: currentDate, fechaComparar: null });
-  // }, []);
 
-  //Para el botón de limpiar filtro
-  // var valid = function (current) {
-  //   const today = moment();
-  //   const isSunday = current.day() === 0;
-  //   return current.isBefore(today) && !isSunday;
-  // };
+  // Para el botón de limpiar filtro
+  var limpiarFiltros = function () {
+    setProducto("");
+    setCategoria("");
+    setFechaDesde({ fechaMuestra: null, fechaComparar: null });
+    setFechaHasta({ fechaMuestra: null, fechaComparar: null });
+    datetimeRefHasta.current.setState({ inputValue: "" });
+    datetimeRefDesde.current.setState({ inputValue: "" });
+  };
+  const cargarProductos = async () => {
+    console.log(producto);
+    try {
+      const response = await ConsultasAPI.ListarObjetos(
+        URL_PRODUCTO,
+        pagination.pageIndex,
+        pagination.pageSize,
+        columnFilters,
+        fechaDesde.fechaMuestra,
+        fechaHasta.fechaMuestra,
+        null,
+        null,
+        null
+      );
+      const productos = response.data.results;
+      if (productos) {
+        let datos = [];
+        productos.forEach((producto) => {
+          datos.push({
+            id: producto.id ? producto.id : "",
+            nombre: producto.nombre ? producto.nombre : "",
+            categoria: producto.categoria_detalle.nombre,
+            stock: producto.stock ? producto.stock : "",
+            estado: producto.estado ? "Activo" : "Inactivo",
+            precio: producto.precio_venta ? producto.precio_venta : "",
+            total: producto.precio_venta * producto.stock, //arreglar esto mas tarde
+          });
+        });
+        setData(datos);
+        setCount(response.data.count);
+      }
+    } catch (error) {
+      console.log("Problemas al mostrar las categorias", error);
+    }
+  };
 
   return (
     <Container className="mt-4 mb-4 mainSection">
@@ -252,6 +295,15 @@ const Productos = (props) => {
                   required
                 />
               </Form.Group>
+            </Col>
+            <Col>
+              <Button
+                onClick={() => {
+                  limpiarFiltros();
+                }}
+              >
+                Limpiar
+              </Button>
             </Col>
           </Row>
           {/* <Col md={9}>

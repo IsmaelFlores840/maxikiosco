@@ -11,6 +11,7 @@ import {
 // import Datetime from "react-datetime";
 // import { MRT_Localization_ES } from "material-react-table/locales/es";
 // import moment from "moment";
+import AuthenticationHelper from "../../../helpers/authenticationHelper";
 import Notificaciones from "../../../helpers/notificacionesToast";
 import ConsultasAPI from "../../../helpers/consultasAPI";
 import "react-datetime/css/react-datetime.css";
@@ -27,13 +28,31 @@ export function ModalCargarProveedor(props) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    crearProveedor();
+    if (props.tituloModal === "Editar") {
+      console.log("Editar proveedor");
+      editarProveedor();
+    } else {
+      crearProveedor();
+    }
   };
 
   const handleClose = () => {
     clear();
     props.onClose();
   };
+
+  useEffect(() => {
+    if (props.datosProveedor) {
+      setNombre(props.datosProveedor.nombre ? props.datosProveedor.nombre : "");
+      setDireccion(
+        props.datosProveedor.direccion ? props.datosProveedor.direccion : ""
+      );
+      setTelefono(
+        props.datosProveedor.telefono ? props.datosProveedor.telefono : ""
+      );
+      setEmail(props.datosProveedor.email ? props.datosProveedor.email : "");
+    }
+  }, [props.show]);
 
   const crearProveedor = async () => {
     try {
@@ -44,30 +63,54 @@ export function ModalCargarProveedor(props) {
         );
         return;
       }
-      const proveedor = {
-        nombre: nombre,
-        direccion: direccion,
-        telefono: telefono,
-        email: email,
-      };
-      await ConsultasAPI.CrearObjeto(URL_PROVEEDOR, proveedor).then(
-        (response) => {
-          Swal.fire({
-            title: "Crecion exitosa",
-            text: "Proveedor generado con exito",
-            icon: "success",
-            showCancelButton: true,
-            showConfirmButton: false,
-            cancelButtonColor: "#008185",
-            cancelButtonText: "Aceptar",
-          });
-          clear();
+      await Swal.fire({
+        title: "Esta seguro de crear este proveedor?",
+        text: "",
+        icon: "warning",
+        showCancelButton: true,
+        showConfirmButton: true,
+        confirmButtonColor: "#008185",
+        cancelButtonColor: "#EC1B23",
+        confirmButtonText: "Aceptar",
+        cancelButtonText: "Cancelar",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          const proveedor = {
+            nombre: nombre,
+            direccion: direccion,
+            telefono: telefono,
+            email: email,
+          };
+          ConsultasAPI.CrearObjeto(URL_PROVEEDOR, proveedor).then(
+            (response) => {
+              if (response.status === 201) {
+                Swal.fire({
+                  title: "Crecion exitosa",
+                  text: "Proveedor generado con exito",
+                  icon: "success",
+                  showCancelButton: true,
+                  showConfirmButton: false,
+                  cancelButtonColor: "#008185",
+                  cancelButtonText: "Aceptar",
+                });
+              } else {
+                Swal.fire({
+                  title: "Error",
+                  text: "No se pudo crear el proveedor",
+                  icon: "error",
+                  showCancelButton: true,
+                  showConfirmButton: false,
+                  cancelButtonColor: "#008185",
+                  cancelButtonText: "Aceptar",
+                });
+              }
+              clear();
+            }
+          );
         }
-      );
+      });
     } catch (error) {
       // Captura el error y muestra una notificación
-      // console.error("Error al crear el proveedor:", error);
-
       // Verifica si el error es debido a un correo inválido
       if (error.response && error.response.data && error.response.data.email) {
         Notificaciones.notificacion(
@@ -77,6 +120,54 @@ export function ModalCargarProveedor(props) {
         Notificaciones.notificacion("Error inesperado. Intente nuevamente.");
       }
     }
+  };
+
+  const editarProveedor = async () => {
+    Swal.fire({
+      title: "¿Estás seguro de editar el proveedor?",
+      text: "Esta acción no se puede revertir",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#008185",
+      cancelButtonColor: "#EC1B23",
+      confirmButtonText: "Aceptar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          let objeto;
+          objeto = {
+            user: {
+              id: props.datosProveedor.id,
+              nombre: nombre,
+              telefono: telefono,
+              direccion: direccion,
+              email: email,
+            },
+            usuario: AuthenticationHelper.getUser(),
+          };
+          const response = await ConsultasAPI.ModificarObjeto(
+            URL_PROVEEDOR + "modificarProveedor/",
+            props.datosProveedor.id,
+            objeto
+          );
+
+          if (response.status === 202) {
+            Swal.fire(
+              "Edición exitosa",
+              "Se editó con Éxito el proveedor",
+              "success"
+            );
+          }
+        } catch (error) {
+          Swal.fire(
+            "Error",
+            "No se pudo editar con Éxito el proveedor",
+            "error"
+          );
+        }
+      }
+    });
   };
 
   const clear = () => {
@@ -89,7 +180,7 @@ export function ModalCargarProveedor(props) {
   return (
     <Modal show={props.show} size="xl">
       <Modal.Header closeButton onClick={handleClose}>
-        <Modal.Title> Cargar Proveedor</Modal.Title>
+        <Modal.Title> {props.tituloModal} Proveedor</Modal.Title>
       </Modal.Header>
       <Form
         onSubmit={handleSubmit}
@@ -176,12 +267,9 @@ export function ModalCargarProveedor(props) {
           <Button className="btn boton m-3" onClick={handleClose}>
             Cancelar
           </Button>
-          <Button
-            className="btn boton m-3"
-            // onClick={subirRango}
-            type="submit"
-          >
-            Alta Proveedor
+
+          <Button className="btn boton m-3" type="submit">
+            {props.tituloModal === "Editar" ? "Editar" : "Crear"} Proveedor
           </Button>
         </Modal.Footer>
       </Form>

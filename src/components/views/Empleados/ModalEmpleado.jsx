@@ -11,6 +11,7 @@ import {
 // import Datetime from "react-datetime";
 // import { MRT_Localization_ES } from "material-react-table/locales/es";
 // import moment from "moment";
+import AuthenticationHelper from "../../../helpers/authenticationHelper";
 import Notificaciones from "../../../helpers/notificacionesToast";
 import ConsultasAPI from "../../../helpers/consultasAPI";
 import "react-datetime/css/react-datetime.css";
@@ -31,7 +32,11 @@ export function ModalEmpleado(props) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    crearEmpleado();
+    if (props.tituloModal === "Editar") {
+      editarEmpleado();
+    } else {
+      crearEmpleado();
+    }
   };
 
   const handleClose = () => {
@@ -92,6 +97,55 @@ export function ModalEmpleado(props) {
         Notificaciones.notificacion("Error inesperado. Intente nuevamente.");
       }
     }
+  };
+
+  const editarEmpleado = async () => {
+    Swal.fire({
+      title: "¿Estás seguro de editar el Empleado?",
+      text: "Esta acción no se puede revertir",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#008185",
+      cancelButtonColor: "#EC1B23",
+      confirmButtonText: "Aceptar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          let objeto;
+          objeto = {
+            user: {
+              id: props.datosEmpleado.id,
+              nombre: nombre,
+              apellido: apellido,
+              documento: documento,
+              email: email,
+              contrasenia: contrasenia,
+            },
+            usuario: AuthenticationHelper.getUser(),
+          };
+          const response = await ConsultasAPI.ModificarObjeto(
+            URL_USUARIOS + "modificarEmpleado/",
+            props.datosEmpleado.id,
+            objeto
+          );
+
+          if (response.status === 202) {
+            Swal.fire(
+              "Edición exitosa",
+              "Se editó con Éxito el proveedor",
+              "success"
+            );
+          }
+        } catch (error) {
+          Swal.fire(
+            "Error",
+            "No se pudo editar con Éxito el proveedor",
+            "error"
+          );
+        }
+      }
+    });
   };
 
   const cargarRol = () => {
@@ -258,9 +312,15 @@ export function ModalEmpleado(props) {
           <Button className="btn boton m-3" onClick={handleClose}>
             Cancelar
           </Button>
-          <Button className="btn boton m-3" type="submit">
-            Alta Empleado
-          </Button>
+          {props.tituloModal === "Editar" ? (
+            <Button className="btn boton m-3" type="submit">
+              {props.tituloModal} Empleado
+            </Button>
+          ) : (
+            <Button className="btn boton m-3" type="submit">
+              Alta Empleado
+            </Button>
+          )}
         </Modal.Footer>
       </Form>
     </Modal>
