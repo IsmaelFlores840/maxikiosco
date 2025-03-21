@@ -43,7 +43,7 @@ const Empleados = (props) => {
         URL_USUARIOS,
         pagination.pageIndex,
         pagination.pageSize,
-        // columnFilters,
+        columnFilters,
         null,
         null,
         null,
@@ -149,12 +149,8 @@ const Empleados = (props) => {
   };
 
   const handleEditarEmpleado = async (row) => {
-    console.log(row.id);
-
     const empleado = await ConsultasAPI.ObtenerObjeto(URL_USUARIOS, row.id);
     setDatossEmpleado(empleado.data);
-
-    // setDatosLiquidacion(liq.data);
     setTituloModal("Editar");
     setModalCargarEmpleados(true);
   };

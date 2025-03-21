@@ -42,6 +42,21 @@ export function ModalCargarProducto(props) {
   useEffect(() => {
     cargarCategoria();
     cargarProveedor();
+    if (props.tituloModal === "Editar") {
+      setNombre(props.datosProducto.nombre ? props.datosProducto.nombre : "");
+      setPrecio(
+        props.datosProducto.precio_venta ? props.datosProducto.precio_venta : ""
+      );
+      setStock(props.datosProducto.stock ? props.datosProducto.stock : "");
+      setCategoria(
+        props.datosProducto.categoria && props.datosProducto.categoria_detalle
+          ? props.datosProducto.categoria_detalle
+          : ""
+      );
+      setDescripcion(
+        props.datosProducto.descripcion ? props.datosProducto.descripcion : ""
+      );
+    }
   }, [props.show]);
 
   const crearProducto = async () => {
@@ -116,9 +131,17 @@ export function ModalCargarProducto(props) {
     }
   };
 
-  const cargarProveedor = () => {
+  const cargarProveedor = async () => {
     try {
-      ConsultasAPI.ListarObjetos(URL_PROVEEDOR).then((response) => {
+      await ConsultasAPI.ListarObjetos(
+        URL_PROVEEDOR,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ).then((response) => {
         let proveedores = response.data.results;
         if (proveedores) {
           let datos = [];
@@ -158,7 +181,7 @@ export function ModalCargarProducto(props) {
   return (
     <Modal show={props.show} size="xl">
       <Modal.Header closeButton onClick={handleClose}>
-        <Modal.Title> Agregar Producto</Modal.Title>
+        <Modal.Title> {props.tituloModal} Producto</Modal.Title>
       </Modal.Header>
       <Form
         onSubmit={handleSubmit}
@@ -296,7 +319,7 @@ export function ModalCargarProducto(props) {
             Cancelar
           </Button>
           <Button className="btn boton m-3" type="submit">
-            Generar Producto
+            {props.tituloModal === "Editar" ? "Modificar" : "Generar"} Producto
           </Button>
         </Modal.Footer>
       </Form>

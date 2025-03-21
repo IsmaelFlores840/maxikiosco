@@ -8,9 +8,6 @@ import {
   ModalFooter,
   Button,
 } from "react-bootstrap";
-// import Datetime from "react-datetime";
-// import { MRT_Localization_ES } from "material-react-table/locales/es";
-// import moment from "moment";
 import AuthenticationHelper from "../../../helpers/authenticationHelper";
 import Notificaciones from "../../../helpers/notificacionesToast";
 import ConsultasAPI from "../../../helpers/consultasAPI";
@@ -29,7 +26,6 @@ export function ModalCargarProveedor(props) {
   const handleSubmit = (event) => {
     event.preventDefault();
     if (props.tituloModal === "Editar") {
-      console.log("Editar proveedor");
       editarProveedor();
     } else {
       crearProveedor();
@@ -104,7 +100,7 @@ export function ModalCargarProveedor(props) {
                   cancelButtonText: "Aceptar",
                 });
               }
-              clear();
+              // clear();
             }
           );
         }

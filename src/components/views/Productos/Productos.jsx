@@ -7,6 +7,8 @@ import ModalCargarProducto from "./ModalCargarProducto";
 import "react-datetime/css/react-datetime.css";
 import BtnVolver from "../../common/BtnVolver";
 import Datetime from "react-datetime";
+import { Edit, Visibility, Delete } from "@mui/icons-material";
+import Swal from "sweetalert2";
 
 // import moment from "moment";
 // import { FaPlus } from "react-icons/fa";
@@ -17,6 +19,7 @@ import { darken, IconButton } from "@mui/material";
 const Productos = (props) => {
   const URL_CATEGORIA = window.API_ROUTES.CATEGORIA;
   const URL_PRODUCTO = window.API_ROUTES.PRODUCTO;
+  const rolUser = props.rolUsuario;
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -40,38 +43,40 @@ const Productos = (props) => {
   const datetimeRefHasta = useRef(null);
   const datetimeRefDesde = useRef(null);
   const [producto, setProducto] = useState("");
-  const [estado, setEstado] = useState("");
-  const [n, setN] = useState();
+  const [datosProducto, setDatossProducto] = useState([]);
+  const [tituloModal, setTituloModal] = useState("");
 
   useEffect(() => {
     cargarCategoria();
-  }, []);
+  }, [props.show]);
   useEffect(() => {
     cargarProductos();
   }, [
     fechaDesde.fechaMuestra,
     fechaHasta.fechaMuestra,
     producto,
+    categoria,
     modalCargarProducto,
   ]);
 
   const cargarCategoria = () => {
     try {
-      ConsultasAPI.ListarObjetos(URL_CATEGORIA).then((response) => {
-        let categorias = response.data.results;
-        if (categorias) {
-          let datos = [];
-          categorias.forEach((categoria) => {
-            datos.push({
-              id: categoria.id,
-              nombre: categoria.nombre,
-              descripcion: categoria.descripcion,
+      ConsultasAPI.ListarObjetos(URL_CATEGORIA, null, null, null, null).then(
+        (response) => {
+          let categorias = response.data.results;
+          if (categorias) {
+            let datos = [];
+            categorias.forEach((categoria) => {
+              datos.push({
+                id: categoria.id,
+                nombre: categoria.nombre,
+                descripcion: categoria.descripcion,
+              });
             });
-          });
-          // console.log(datos);
-          setTablaCategoria(datos);
+            setTablaCategoria(datos);
+          }
         }
-      });
+      );
     } catch (error) {
       console.log("Problemas al mostrar las categorias", error);
     }
@@ -127,9 +132,11 @@ const Productos = (props) => {
   };
 
   const handleOpenModalAgregarProducto = () => {
+    setTituloModal("Agregar");
     setModalCargarProducto(true);
   };
   const handleCloseModalAgregarProducto = () => {
+    setTituloModal("");
     setModalCargarProducto(false);
   };
 
@@ -143,7 +150,6 @@ const Productos = (props) => {
     datetimeRefDesde.current.setState({ inputValue: "" });
   };
   const cargarProductos = async () => {
-    console.log(producto);
     try {
       const response = await ConsultasAPI.ListarObjetos(
         URL_PRODUCTO,
@@ -152,9 +158,9 @@ const Productos = (props) => {
         columnFilters,
         fechaDesde.fechaMuestra,
         fechaHasta.fechaMuestra,
+        producto,
         null,
-        null,
-        null
+        categoria ? categoria.nombre : ""
       );
       const productos = response.data.results;
       if (productos) {
@@ -178,6 +184,49 @@ const Productos = (props) => {
     }
   };
 
+  const handleEliminarProducto = async (row) => {
+    await Swal.fire({
+      title: "Esta seguro de borrar este producto?",
+      text: "",
+      icon: "warning",
+      showCancelButton: true,
+      showConfirmButton: true,
+      confirmButtonColor: "#008185",
+      cancelButtonColor: "#EC1B23",
+      confirmButtonText: "Aceptar",
+      cancelButtonText: "Cancelar",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        ConsultasAPI.BorrarObjeto(URL_PRODUCTO, row.id)
+          .then((response) => {
+            if (response.status === 204) {
+              Swal.fire({
+                title: "Producto Eliminado Exitosamente",
+                text: "Esta acción no se podrá deshacer",
+                icon: "success",
+              });
+            } else {
+              Swal.fire({
+                title: "Error: problema con la eliminación",
+                text: "El Producto no se pudo borrar correctamente",
+                icon: "error",
+              });
+            }
+          })
+          .then(() => {
+            cargarProductos(); // Llamo a cargarTabla después de la eliminación
+          });
+      }
+    });
+  };
+
+  const handleEditarProducto = async (row) => {
+    const producto = await ConsultasAPI.ObtenerObjeto(URL_PRODUCTO, row.id);
+    setDatossProducto(producto.data);
+    setTituloModal("Editar");
+    setModalCargarProducto(true);
+  };
+
   return (
     <Container className="mt-4 mb-4 mainSection">
       <Card>
@@ -189,7 +238,6 @@ const Productos = (props) => {
           }}
         >
           <h2 className="py-2 fw ml-10">Productos</h2>
-
           <Button
             className="btn"
             style={{
@@ -284,9 +332,7 @@ const Productos = (props) => {
                 }}
               >
                 <Form.Label>Producto:</Form.Label>
-
                 <Form.Control
-                  // readOnly={true}
                   type="text"
                   value={producto}
                   onChange={(e) => {
@@ -296,7 +342,13 @@ const Productos = (props) => {
                 />
               </Form.Group>
             </Col>
-            <Col>
+            <Col
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                display: "flex",
+              }}
+            >
               <Button
                 onClick={() => {
                   limpiarFiltros();
@@ -306,18 +358,6 @@ const Productos = (props) => {
               </Button>
             </Col>
           </Row>
-          {/* <Col md={9}>
-              <Form.Control
-                // readOnly={true}
-                type="text"
-                value={fechaHasta}
-                onChange={(e) => {
-                  setAhora(e.target.value);
-                }}
-                required
-              />
-            </Col> */}
-
           <Card className="mb-13">
             <MaterialReactTable
               className="w-100"
@@ -355,7 +395,34 @@ const Productos = (props) => {
               enableGlobalFilter={false} //turn off a feature
               enableFilters={false}
               localization={MRT_Localization_ES}
+              enableRowActions
               positionActionsColumn="last"
+              renderRowActions={({ row }) => (
+                <div className="d-flex">
+                  {rolUser === "ADMINISTRADOR" ? (
+                    <IconButton
+                      onClick={() => {
+                        handleEditarProducto(row.original);
+                      }}
+                      title="Editar"
+                      variant="outline-info"
+                    >
+                      <Edit />
+                    </IconButton>
+                  ) : null}
+                  {rolUser === "ADMINISTRADOR" ? (
+                    <IconButton
+                      onClick={() => {
+                        handleEliminarProducto(row.original);
+                      }}
+                      title="Eliminar"
+                      variant="outline-info"
+                    >
+                      <Delete />
+                    </IconButton>
+                  ) : null}
+                </div>
+              )}
               // manualPagination
               // manualFiltering
               muiTablePaginationProps={{
@@ -394,6 +461,8 @@ const Productos = (props) => {
       <ModalCargarProducto
         onClose={handleCloseModalAgregarProducto}
         show={modalCargarProducto}
+        tituloModal={tituloModal}
+        datosProducto={datosProducto}
       />
     </Container>
   );

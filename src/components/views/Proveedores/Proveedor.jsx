@@ -9,11 +9,6 @@ import BtnVolver from "../../common/BtnVolver";
 import { Edit, Visibility, Delete } from "@mui/icons-material";
 import Swal from "sweetalert2";
 
-// import moment from "moment";
-// import Datetime from "react-datetime";
-// import { FaPlus } from "react-icons/fa";
-// import { FaEraser } from "react-icons/fa";
-
 import { darken, IconButton } from "@mui/material";
 
 const Proveedores = (props) => {
@@ -46,10 +41,10 @@ const Proveedores = (props) => {
         columnFilters,
         null,
         null,
+        nombre ? nombre : "",
         null,
         null,
-        null,
-        null
+        email ? email : ""
       ).then((response) => {
         let proveedores = response.data.results;
         setCount(response.data.count);
@@ -64,7 +59,6 @@ const Proveedores = (props) => {
               email: proveedor.email,
             });
           });
-          // console.log(datos);
           setData(datos);
         }
       });
@@ -150,6 +144,10 @@ const Proveedores = (props) => {
     setModalCargarProveedor(true);
   };
 
+  var limpiarFiltros = function () {
+    setNombre("");
+    setEmail("");
+  };
   return (
     <Container className="mt-4 mb-4 mainSection">
       <Card>
@@ -214,6 +212,16 @@ const Proveedores = (props) => {
                   required
                 />
               </Form.Group>
+            </Col>
+            <Col
+              md={3}
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                display: "flex",
+              }}
+            >
+              <Button onClick={limpiarFiltros}>Limpiar Filtros</Button>
             </Col>
           </Row>
           <Card className="mb-13">

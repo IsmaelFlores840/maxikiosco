@@ -1,23 +1,18 @@
 import Request from "./request";
 
 export default class ConsultasAPI {
-  static ListarObjetos( //modificar los parametros
+  static ListarObjetos(
     url,
     page,
     pageSize,
     columnFilters,
     fechaDesde,
     fechaHasta,
-    estado,
-    tipo,
-    zona,
-    localidad,
-    sorting,
-    fechaExceptuada,
-    sorteo,
-    titular,
-    apellido,
-    agencia
+    nombre,
+    numero,
+    categoria,
+    email,
+    sorting
   ) {
     return Request.get(
       url +
@@ -27,28 +22,18 @@ export default class ConsultasAPI {
         (fechaDesde ? fechaDesde : null) +
         "&fechaHasta=" +
         (fechaHasta ? fechaHasta : null) +
-        "&estado=" +
-        estado +
-        "&tipo=" +
-        tipo +
-        "&zona=" +
-        zona +
-        "&apellido=" +
-        apellido +
-        "&localidad=" +
-        localidad +
+        "&nombre=" +
+        nombre +
+        "&numero=" +
+        numero +
+        "&categoria=" +
+        categoria +
+        "&email=" +
+        email +
         "&filters=" +
         JSON.stringify(columnFilters ?? []) +
         "&sorting=" +
-        JSON.stringify(sorting ?? []) +
-        "&fechaExceptuada=" +
-        (fechaExceptuada ? fechaExceptuada : null) +
-        "&sorteo=" +
-        sorteo +
-        "&titular=" +
-        titular +
-        "&agencia=" +
-        agencia
+        JSON.stringify(sorting ?? [])
 
       //  ,{params:{page:page, filters:JSON.stringify(columnFilters ?? [])}}
     )
