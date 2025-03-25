@@ -46,10 +46,10 @@ const Empleados = (props) => {
         columnFilters,
         null,
         null,
+        nombre,
         null,
         null,
-        null,
-        null
+        email
       ).then((response) => {
         let usuarios = response.data.results;
         setCount(response.data.count);

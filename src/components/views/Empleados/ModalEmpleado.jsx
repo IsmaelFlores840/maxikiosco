@@ -27,7 +27,7 @@ export function ModalEmpleado(props) {
   const [email, setEmail] = useState("");
   const [rol, setRol] = useState("");
   const [tablaRoles, setTablaRoles] = useState([]);
-  const [usuario, setUsuario] = useState("");
+  // const [usuario, setUsuario] = useState("");
   const [contrasenia, setContrasenia] = useState("");
 
   const handleSubmit = (event) => {
@@ -44,6 +44,7 @@ export function ModalEmpleado(props) {
     props.onClose();
   };
   useEffect(() => {
+    console.log(props.datosEmpleado);
     cargarRol();
     if (props.datosEmpleado) {
       // cargamos los datos en caso de que se quiera editar el empleado
@@ -55,7 +56,11 @@ export function ModalEmpleado(props) {
         props.datosEmpleado.documento ? props.datosEmpleado.documento : ""
       );
       setEmail(props.datosEmpleado.email ? props.datosEmpleado.email : "");
-      setRol(props.datosEmpleado.rol ? props.datosEmpleado.rol : "");
+      setRol(
+        props.datosEmpleado.rol_detalle
+          ? props.datosEmpleado.rol_detalle.nombre
+          : ""
+      );
     }
   }, [props.show]);
 
@@ -133,14 +138,14 @@ export function ModalEmpleado(props) {
           if (response.status === 202) {
             Swal.fire(
               "Edición exitosa",
-              "Se editó con Éxito el proveedor",
+              "Se editó con Éxito el empleado",
               "success"
             );
           }
         } catch (error) {
           Swal.fire(
             "Error",
-            "No se pudo editar con Éxito el proveedor",
+            "No se pudo editar con Éxito el empleado",
             "error"
           );
         }
@@ -160,7 +165,7 @@ export function ModalEmpleado(props) {
               nombre: rol.nombre,
             });
           });
-          // console.log(datos);
+          console.log(roles);
           setTablaRoles(datos);
         }
       });
@@ -293,7 +298,7 @@ export function ModalEmpleado(props) {
                   </Form.Group>
                 </Col>
               </Row>
-              <Row className="mb-3" style={{ justifyContent: "center" }}>
+              {/* <Row className="mb-3" style={{ justifyContent: "center" }}>
                 <Col>
                   <Form.Group>
                     <Form.Label>Contraseña:</Form.Label>
@@ -304,7 +309,7 @@ export function ModalEmpleado(props) {
                     />
                   </Form.Group>
                 </Col>
-              </Row>
+              </Row> */}
             </Card.Body>
           </Card>
         </Modal.Body>
