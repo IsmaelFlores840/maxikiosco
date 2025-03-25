@@ -28,7 +28,7 @@ export function ModalEmpleado(props) {
   const [rol, setRol] = useState("");
   const [tablaRoles, setTablaRoles] = useState([]);
   // const [usuario, setUsuario] = useState("");
-  const [contrasenia, setContrasenia] = useState("");
+  // const [contrasenia, setContrasenia] = useState("");
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -43,8 +43,8 @@ export function ModalEmpleado(props) {
     clear();
     props.onClose();
   };
+
   useEffect(() => {
-    console.log(props.datosEmpleado);
     cargarRol();
     if (props.datosEmpleado) {
       // cargamos los datos en caso de que se quiera editar el empleado
@@ -57,9 +57,7 @@ export function ModalEmpleado(props) {
       );
       setEmail(props.datosEmpleado.email ? props.datosEmpleado.email : "");
       setRol(
-        props.datosEmpleado.rol_detalle
-          ? props.datosEmpleado.rol_detalle.nombre
-          : ""
+        props.datosEmpleado.rol_detalle ? props.datosEmpleado.rol_detalle : ""
       );
     }
   }, [props.show]);
@@ -78,7 +76,7 @@ export function ModalEmpleado(props) {
         apellido: apellido,
         documento: documento,
         email: email,
-        contrasenia: contrasenia,
+        // contrasenia: contrasenia,
         rol: rol,
       };
       await ConsultasAPI.CrearObjeto(URL_USUARIOS, empleado).then(() => {
@@ -125,7 +123,8 @@ export function ModalEmpleado(props) {
               apellido: apellido,
               documento: documento,
               email: email,
-              contrasenia: contrasenia,
+              // contrasenia: contrasenia,
+              rol: rol,
             },
             usuario: AuthenticationHelper.getUser(),
           };
@@ -165,7 +164,6 @@ export function ModalEmpleado(props) {
               nombre: rol.nombre,
             });
           });
-          console.log(roles);
           setTablaRoles(datos);
         }
       });
@@ -182,6 +180,7 @@ export function ModalEmpleado(props) {
     setNombre("");
     setDocumento("");
     setEmail("");
+    setApellido("");
   };
 
   return (
@@ -298,18 +297,7 @@ export function ModalEmpleado(props) {
                   </Form.Group>
                 </Col>
               </Row>
-              {/* <Row className="mb-3" style={{ justifyContent: "center" }}>
-                <Col>
-                  <Form.Group>
-                    <Form.Label>Contraseña:</Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={contrasenia}
-                      onChange={(e) => setContrasenia(e.target.value)}
-                    />
-                  </Form.Group>
-                </Col>
-              </Row> */}
+
             </Card.Body>
           </Card>
         </Modal.Body>

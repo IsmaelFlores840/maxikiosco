@@ -6,7 +6,7 @@ import ModalCargarProveedor from "./ModalCargarProveedor";
 import ConsultasAPI from "../../../helpers/consultasAPI";
 import "react-datetime/css/react-datetime.css";
 import BtnVolver from "../../common/BtnVolver";
-import { Edit, Visibility, Delete } from "@mui/icons-material";
+import { Edit, Delete } from "@mui/icons-material";
 import Swal from "sweetalert2";
 
 import { darken, IconButton } from "@mui/material";
@@ -63,11 +63,11 @@ const Proveedores = (props) => {
         }
       });
     } catch (error) {
-      console.log("Problemas al mostrar cartones no registrados", error);
+      console.log("Problemas al mostrar proveedores", error);
     }
   };
 
-  //Columnas de la tabla Venta Mostrador
+  //Columnas de la tabla Poveedores
   const columns = useMemo(() => [
     {
       header: "Nombre",
@@ -124,7 +124,7 @@ const Proveedores = (props) => {
             } else {
               Swal.fire({
                 title: "Error: problema con la eliminación",
-                text: "El empleado no se pudo borrar correctamente",
+                text: "El Proveedor no se pudo borrar correctamente",
                 icon: "error",
               });
             }

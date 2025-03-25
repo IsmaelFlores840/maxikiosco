@@ -16,7 +16,6 @@ import Swal from "sweetalert2";
 
 export function ModalCargarProveedor(props) {
   const URL_PROVEEDOR = window.API_ROUTES.PROVEEDOR;
-  // const URL_ROL = window.API_ROUTES.ROL;
 
   const [nombre, setNombre] = useState("");
   const [direccion, setDireccion] = useState("");

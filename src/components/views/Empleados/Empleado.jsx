@@ -7,13 +7,8 @@ import ConsultasAPI from "../../../helpers/consultasAPI";
 import { darken, IconButton } from "@mui/material";
 import "react-datetime/css/react-datetime.css";
 import BtnVolver from "../../common/BtnVolver";
-import { Edit, Visibility, Delete } from "@mui/icons-material";
+import { Edit, Delete } from "@mui/icons-material";
 import Swal from "sweetalert2";
-
-// import moment from "moment";
-// import Datetime from "react-datetime";
-// import { FaPlus } from "react-icons/fa";
-// import { FaEraser } from "react-icons/fa";
 
 const Empleados = (props) => {
   const URL_USUARIOS = window.API_ROUTES.USUARIOS;
@@ -70,7 +65,7 @@ const Empleados = (props) => {
         }
       });
     } catch (error) {
-      console.log("Problemas al mostrar cartones no registrados", error);
+      console.log("Problemas al mostrar empleados", error);
     }
   };
 
@@ -110,6 +105,7 @@ const Empleados = (props) => {
   };
   const handleCloseModalEmpleado = () => {
     setModalCargarEmpleados(false);
+    setDatossEmpleado([]);
   };
 
   const handleEliminarEmpleado = async (row) => {

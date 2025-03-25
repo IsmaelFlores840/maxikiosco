@@ -7,13 +7,8 @@ import ModalCargarProducto from "./ModalCargarProducto";
 import "react-datetime/css/react-datetime.css";
 import BtnVolver from "../../common/BtnVolver";
 import Datetime from "react-datetime";
-import { Edit, Visibility, Delete } from "@mui/icons-material";
+import { Edit, Delete } from "@mui/icons-material";
 import Swal from "sweetalert2";
-
-// import moment from "moment";
-// import { FaPlus } from "react-icons/fa";
-// import { FaEraser } from "react-icons/fa";
-
 import { darken, IconButton } from "@mui/material";
 
 const Productos = (props) => {
@@ -180,7 +175,7 @@ const Productos = (props) => {
         setCount(response.data.count);
       }
     } catch (error) {
-      console.log("Problemas al mostrar las categorias", error);
+      console.log("Problemas al mostrar los productos", error);
     }
   };
 
