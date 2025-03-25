@@ -12,6 +12,7 @@ import Reportes from "./components/views/Reportes";
 import Productos from "./components/views/Productos/Productos";
 import Proveedores from "./components/views/Proveedores/Proveedor";
 import Empleado from "./components/views/Empleados/Empleado";
+import Cliente from "./components/views/Clientes/Cliente";
 import { ProtectedRoute } from "./components/common/ProtectedRoute";
 
 function App() {
@@ -97,6 +98,19 @@ function App() {
               errorRedirectTo="*"
             >
               <Empleado rolUsuario={rol} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          exact
+          path="/Gestion-clientes"
+          element={
+            <ProtectedRoute
+              isAllowed={rol === "ADMINISTRADOR"}
+              redirectTo="/Gestion-clientes"
+              errorRedirectTo="*"
+            >
+              <Cliente rolUsuario={rol} />
             </ProtectedRoute>
           }
         />
