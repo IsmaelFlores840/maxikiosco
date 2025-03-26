@@ -23,14 +23,14 @@ const Clientes = (props) => {
   const [data, setData] = useState([]);
 
   const [modalCargarCliente, setModalCargarProveedor] = useState(false);
-  const [email, setEmail] = useState("");
+  const [apellido, setApellido] = useState("");
   const [nombre, setNombre] = useState("");
   const [tituloModal, setTituloModal] = useState("");
   const [datosCliente, setDatosProveedor] = useState([]);
 
   useEffect(() => {
     cargarClientes();
-  }, [modalCargarCliente, email, nombre]);
+  }, [modalCargarCliente, apellido, nombre]);
 
   const cargarClientes = () => {
     try {
@@ -44,26 +44,26 @@ const Clientes = (props) => {
         nombre ? nombre : "",
         null,
         null,
-        email ? email : ""
+        apellido ? apellido : ""
       ).then((response) => {
-        let proveedores = response.data.results;
+        let clientes = response.data.results;
         setCount(response.data.count);
-        if (proveedores) {
+        if (clientes) {
           let datos = [];
-          proveedores.forEach((proveedor) => {
+          clientes.forEach((proveedor) => {
             datos.push({
               id: proveedor.id,
               nombre: proveedor.nombre,
+              apellido: proveedor.apellido,
               direccion: proveedor.direccion,
               telefono: proveedor.telefono,
-              email: proveedor.email,
             });
           });
           setData(datos);
         }
       });
     } catch (error) {
-      console.log("Problemas al mostrar proveedores", error);
+      console.log("Problemas al mostrar clientes", error);
     }
   };
 
@@ -80,7 +80,7 @@ const Clientes = (props) => {
       size: 20,
     },
     {
-      header: "Telefono",
+      header: "Teléfono",
       accessorKey: "telefono",
       size: 20,
     },
@@ -146,7 +146,7 @@ const Clientes = (props) => {
 
   var limpiarFiltros = function () {
     setNombre("");
-    setEmail("");
+    setApellido("");
   };
   return (
     <Container className="mt-4 mb-4 mainSection">
@@ -201,13 +201,13 @@ const Clientes = (props) => {
                   alignItems: "center",
                 }}
               >
-                <Form.Label>Email:</Form.Label>
+                <Form.Label>Apellido:</Form.Label>
 
                 <Form.Control
                   type="text"
-                  value={email}
+                  value={apellido}
                   onChange={(e) => {
-                    setEmail(e.target.value);
+                    setApellido(e.target.value);
                   }}
                   required
                 />
