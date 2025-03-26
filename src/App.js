@@ -13,6 +13,7 @@ import Productos from "./components/views/Productos/Productos";
 import Proveedores from "./components/views/Proveedores/Proveedor";
 import Empleado from "./components/views/Empleados/Empleado";
 import Cliente from "./components/views/Clientes/Cliente";
+import Venta from "./components/views/Ventas/Venta";
 import { ProtectedRoute } from "./components/common/ProtectedRoute";
 
 function App() {
@@ -27,10 +28,6 @@ function App() {
   const [rol, setRol] = useState(
     AuthHelper.getRol() ? AuthHelper.getRol() : null
   );
-
-  useEffect(() => {
-    // Aquí puedes agregar lógica adicional si es necesario
-  }, []);
 
   const updateUserState = (newUser, newCambioClave, newRol) => {
     setUser(newUser);
@@ -111,6 +108,19 @@ function App() {
               errorRedirectTo="*"
             >
               <Cliente rolUsuario={rol} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          exact
+          path="/Gestion-ventas"
+          element={
+            <ProtectedRoute
+              isAllowed={rol === "ADMINISTRADOR"}
+              redirectTo="/Gestion-ventas"
+              errorRedirectTo="*"
+            >
+              <Venta rolUsuario={rol} />
             </ProtectedRoute>
           }
         />
