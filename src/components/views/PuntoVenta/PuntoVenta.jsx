@@ -2,79 +2,68 @@ import { Container, Col, Row, Card, Button, Form } from "react-bootstrap";
 import { MRT_Localization_ES } from "material-react-table/locales/es";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { MaterialReactTable } from "material-react-table";
-import ModalVenta from "./ModalVenta";
+// import ModalCargarProveedor from "./ModalCargarProveedor";
 import ConsultasAPI from "../../../helpers/consultasAPI";
 import "react-datetime/css/react-datetime.css";
 import BtnVolver from "../../common/BtnVolver";
-import Datetime from "react-datetime";
 import { Edit, Delete } from "@mui/icons-material";
 import Swal from "sweetalert2";
 
 import { darken, IconButton } from "@mui/material";
 
-const Ventas = (props) => {
+const PuntoVenta = (props) => {
   const rolUser = props.rolUsuario;
-  const URL_CLIENTE = window.API_ROUTES.CLIENTE;
-  const URL_VENTA = window.API_ROUTES.VENTA;
+  const URL_PROVEEDOR = window.API_ROUTES.PROVEEDOR;
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
   });
-  const [fechaDesde, setFechaDesde] = useState({
-    fechaMuestra: null,
-    fechaComparar: null,
-  });
-  const [fechaHasta, setFechaHasta] = useState({
-    fechaMuestra: null,
-    fechaComparar: null,
-  });
-  const datetimeRefHasta = useRef(null);
-  const datetimeRefDesde = useRef(null);
   const [count, setCount] = useState();
   const [columnFilters, setColumnFilters] = useState([]);
   const [data, setData] = useState([]);
 
-  const [modalVenta, setModalVenta] = useState(false);
-  const [producto, setProducto] = useState("");
+  const [modalCargarProveedor, setModalCargarProveedor] = useState(false);
+  const [email, setEmail] = useState("");
+  const [nombre, setNombre] = useState("");
   const [tituloModal, setTituloModal] = useState("");
-  const [datosVenta, setDatosVenta] = useState([]);
+  const [datosProveedor, setDatosProveedor] = useState([]);
 
   useEffect(() => {
-    cargarVentas();
-  }, [modalVenta, fechaDesde, fechaHasta, producto]);
+    cargarProveedores();
+  }, [modalCargarProveedor, email, nombre]);
 
-  const cargarVentas = () => {
+  const cargarProveedores = () => {
     try {
       ConsultasAPI.ListarObjetos(
-        URL_VENTA,
+        URL_PROVEEDOR,
         pagination.pageIndex,
         pagination.pageSize,
         columnFilters,
-        fechaDesde.fechaMuestra,
-        fechaHasta.fechaMuestra,
-        producto ? producto : "",
-        null, //numero
-        null, //categoria
-        null //email
+        null,
+        null,
+        nombre ? nombre : "",
+        null,
+        null,
+        email ? email : ""
       ).then((response) => {
-        let clientes = response.data.results;
+        let proveedores = response.data.results;
         setCount(response.data.count);
-        if (clientes) {
+        if (proveedores) {
           let datos = [];
-          clientes.forEach((venta) => {
+          proveedores.forEach((proveedor) => {
             datos.push({
-              id: venta.id,
-              nombre: venta.nombre,
-              apellido: venta.apellido,
-              direccion: venta.direccion,
-              telefono: venta.telefono,
+              id: proveedor.id,
+              nombre: proveedor.nombre,
+              direccion: proveedor.direccion,
+              telefono: proveedor.telefono,
+              email: proveedor.email,
             });
           });
           setData(datos);
         }
       });
     } catch (error) {
-      console.log("Problemas al mostrar clientes", error);
+      console.log("Problemas al mostrar proveedores", error);
     }
   };
 
@@ -86,11 +75,6 @@ const Ventas = (props) => {
       size: 15,
     },
     {
-      header: "Apellido",
-      accessorKey: "apellido",
-      size: 20,
-    },
-    {
       header: "Teléfono",
       accessorKey: "telefono",
       size: 20,
@@ -100,38 +84,25 @@ const Ventas = (props) => {
       accessorKey: "direccion",
       size: 20,
     },
+    {
+      header: "Email",
+      accessorKey: "email",
+      size: 20,
+    },
   ]);
 
-  const handleFechaDesdeChange = (momentDate) => {
-    const fechaMuestra = momentDate.format("DD/MM/YYYY");
-    const fechaComparar = momentDate.format("YYYY-MM-DD");
-    setFechaDesde({
-      fechaMuestra: fechaMuestra,
-      fechaComparar: fechaComparar,
-    });
-  };
-
-  const handleFechaHastaChange = (momentDate) => {
-    const fechaMuestra = momentDate.format("DD/MM/YYYY");
-    const fechaComparar = momentDate.format("YYYY-MM-DD");
-    setFechaHasta({
-      fechaMuestra: fechaMuestra,
-      fechaComparar: fechaComparar,
-    });
-  };
-
-  const handleOpenModalAgregarVenta = () => {
+  const handleOpenModalAgregarProveedor = () => {
     setTituloModal("Agregar");
-    setModalVenta(true);
+    setModalCargarProveedor(true);
   };
-  const handleCloseModalVenta = () => {
-    setDatosVenta([]);
-    setModalVenta(false);
+  const handleCloseModalAgregarProveedor = () => {
+    setDatosProveedor([]);
+    setModalCargarProveedor(false);
   };
 
-  const handleEliminarVenta = async (row) => {
+  const handleEliminarProveedor = async (row) => {
     await Swal.fire({
-      title: "Esta seguro de borrar esta venta?",
+      title: "Esta seguro de borrar este proveedor?",
       text: "",
       icon: "warning",
       showCancelButton: true,
@@ -142,43 +113,40 @@ const Ventas = (props) => {
       cancelButtonText: "Cancelar",
     }).then((result) => {
       if (result.isConfirmed) {
-        ConsultasAPI.BorrarObjeto(URL_VENTA, row.id)
+        ConsultasAPI.BorrarObjeto(URL_PROVEEDOR, row.id)
           .then((response) => {
             if (response.status === 204) {
               Swal.fire({
-                title: "Venta Eliminado Exitosamente",
+                title: "Proveedor Eliminado Exitosamente",
                 text: "Esta acción no se podrá deshacer",
                 icon: "success",
               });
             } else {
               Swal.fire({
                 title: "Error: problema con la eliminación",
-                text: "El Venta no se pudo borrar correctamente",
+                text: "El Proveedor no se pudo borrar correctamente",
                 icon: "error",
               });
             }
           })
           .then(() => {
-            cargarVentas(); // Llamo a cargarTabla después de la eliminación
+            cargarProveedores(); // Llamo a cargarTabla después de la eliminación
           });
       }
     });
   };
 
-  const handleEditarVenta = async (row) => {
-    const venta = await ConsultasAPI.ObtenerObjeto(URL_VENTA, row.id);
-    setDatosVenta(venta.data);
+  const handleEditarProveedor = async (row) => {
+    const proveedor = await ConsultasAPI.ObtenerObjeto(URL_PROVEEDOR, row.id);
+    setDatosProveedor(proveedor.data);
 
     setTituloModal("Editar");
-    setModalVenta(true);
+    setModalCargarProveedor(true);
   };
 
   var limpiarFiltros = function () {
-    setProducto("");
-    setFechaDesde({ fechaMuestra: null, fechaComparar: null });
-    setFechaHasta({ fechaMuestra: null, fechaComparar: null });
-    datetimeRefHasta.current.setState({ inputValue: "" });
-    datetimeRefDesde.current.setState({ inputValue: "" });
+    setNombre("");
+    setEmail("");
   };
   return (
     <Container className="mt-4 mb-4 mainSection">
@@ -190,19 +158,19 @@ const Ventas = (props) => {
             alignItems: "center", // Centra verticalmente los elementos hijos
           }}
         >
-          <h2 className="py-2 fw ml-10">Ventas</h2>
+          <h2 className="py-2 fw ml-10">PuntoVenta</h2>
 
-          {/* <Button 
+          <Button
             className="btn"
             style={{
               justifyContent: "center",
               alignItems: "center",
               marginRight: 10,
             }}
-            onClick={handleOpenModalAgregarVenta}
+            onClick={handleOpenModalAgregarProveedor}
           >
             Agregar
-          </Button> */}
+          </Button>
         </Card.Header>
         <Card.Body className="mb-13" style={{ paddingBottom: 0 }}>
           <Row
@@ -216,19 +184,14 @@ const Ventas = (props) => {
                   alignItems: "center",
                 }}
               >
-                <Form.Label>Fecha Desde:</Form.Label>
-                <Datetime
-                  timeFormat={false}
-                  style={{ width: "100%", height: "32px" }}
-                  dateFormat="DD/MM/YYYY"
-                  updateOnView=""
-                  inputProps={{
-                    readOnly: true,
-                    placeholder: "Elegir fecha",
+                <Form.Label>Nombre:</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={nombre}
+                  onChange={(e) => {
+                    setNombre(e.target.value);
                   }}
-                  ref={datetimeRefDesde}
-                  value={null}
-                  onChange={handleFechaDesdeChange}
+                  required
                 />
               </Form.Group>
             </Col>
@@ -238,35 +201,13 @@ const Ventas = (props) => {
                   alignItems: "center",
                 }}
               >
-                <Form.Label>Fecha Hasta:</Form.Label>
-                <Datetime
-                  timeFormat={false}
-                  style={{ width: "100%", height: "32px" }}
-                  dateFormat="DD/MM/YYYY"
-                  updateOnView=""
-                  inputProps={{
-                    readOnly: true,
-                    placeholder: "Elegir fecha",
-                  }}
-                  ref={datetimeRefHasta}
-                  value={null}
-                  onChange={handleFechaHastaChange}
-                />
-              </Form.Group>
-            </Col>
-            <Col>
-              <Form.Group
-                style={{
-                  alignItems: "center",
-                }}
-              >
-                <Form.Label>Producto:</Form.Label>
+                <Form.Label>Email:</Form.Label>
 
                 <Form.Control
                   type="text"
-                  value={producto}
+                  value={email}
                   onChange={(e) => {
-                    setProducto(e.target.value);
+                    setEmail(e.target.value);
                   }}
                   required
                 />
@@ -327,7 +268,7 @@ const Ventas = (props) => {
                   {rolUser === "ADMINISTRADOR" ? (
                     <IconButton
                       onClick={() => {
-                        handleEditarVenta(row.original);
+                        handleEditarProveedor(row.original);
                       }}
                       title="Editar"
                       variant="outline-info"
@@ -338,7 +279,7 @@ const Ventas = (props) => {
                   {rolUser === "ADMINISTRADOR" ? (
                     <IconButton
                       onClick={() => {
-                        handleEliminarVenta(row.original);
+                        handleEliminarProveedor(row.original);
                       }}
                       title="Eliminar"
                       variant="outline-info"
@@ -379,14 +320,14 @@ const Ventas = (props) => {
         </Card.Body>
       </Card>
 
-      <ModalVenta
-        onClose={handleCloseModalVenta}
-        show={modalVenta}
+      {/* <ModalCargarProveedor
+        onClose={handleCloseModalAgregarProveedor}
+        show={modalCargarProveedor}
         tituloModal={tituloModal}
-        datosVenta={datosVenta}
-      />
+        datosProveedor={datosProveedor}
+      /> */}
     </Container>
   );
 };
 
-export default Ventas;
+export default PuntoVenta;
