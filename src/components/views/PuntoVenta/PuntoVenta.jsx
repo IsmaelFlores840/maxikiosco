@@ -8,12 +8,15 @@ import "react-datetime/css/react-datetime.css";
 import BtnVolver from "../../common/BtnVolver";
 import { Edit, Delete } from "@mui/icons-material";
 import Swal from "sweetalert2";
+import { Typeahead } from "react-bootstrap-typeahead";
 
 import { darken, IconButton } from "@mui/material";
 
 const PuntoVenta = (props) => {
   const rolUser = props.rolUsuario;
   const URL_PROVEEDOR = window.API_ROUTES.PROVEEDOR;
+  const URL_PRODUCTO = window.API_ROUTES.PRODUCTO;
+
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -21,49 +24,87 @@ const PuntoVenta = (props) => {
   const [count, setCount] = useState();
   const [columnFilters, setColumnFilters] = useState([]);
   const [data, setData] = useState([]);
+  const [selectedOption, setSelectedOption] = useState("");
+  const [tablaProductos, setTablaProductos] = useState([]);
 
   const [modalCargarProveedor, setModalCargarProveedor] = useState(false);
-  const [email, setEmail] = useState("");
   const [nombre, setNombre] = useState("");
   const [tituloModal, setTituloModal] = useState("");
   const [datosProveedor, setDatosProveedor] = useState([]);
 
   useEffect(() => {
-    cargarProveedores();
-  }, [modalCargarProveedor, email, nombre]);
+    // cargarProveedores();
+    cargarProductos();
+  }, [modalCargarProveedor]);
 
-  const cargarProveedores = () => {
+  // const cargarProveedores = async () => {
+  //   try {
+  //     await ConsultasAPI.ListarObjetos(
+  //       URL_PROVEEDOR,
+  //       pagination.pageIndex,
+  //       pagination.pageSize,
+  //       columnFilters,
+  //       null,
+  //       null,
+  //       null,
+  //       null,
+  //       null,
+  //       null
+  //     ).then((response) => {
+  //       let proveedores = response.data.results;
+  //       setCount(response.data.count);
+  //       if (proveedores) {
+  //         let datos = [];
+  //         proveedores.forEach((proveedor) => {
+  //           datos.push({
+  //             id: proveedor.id,
+  //             nombre: proveedor.nombre,
+  //             direccion: proveedor.direccion,
+  //             telefono: proveedor.telefono,
+  //             email: proveedor.email,
+  //           });
+  //         });
+  //         setData(datos);
+  //       }
+  //     });
+  //   } catch (error) {
+  //     console.log("Problemas al mostrar proveedores", error);
+  //   }
+  // };
+
+  const cargarProductos = async () => {
     try {
-      ConsultasAPI.ListarObjetos(
-        URL_PROVEEDOR,
+      await ConsultasAPI.ListarObjetos(
+        URL_PRODUCTO,
         pagination.pageIndex,
         pagination.pageSize,
         columnFilters,
         null,
         null,
-        nombre ? nombre : "",
         null,
         null,
-        email ? email : ""
+        null,
+        null
       ).then((response) => {
-        let proveedores = response.data.results;
+        let productos = response.data.results;
         setCount(response.data.count);
-        if (proveedores) {
+        // console.log(productos);
+        if (productos) {
           let datos = [];
-          proveedores.forEach((proveedor) => {
+          productos.forEach((producto) => {
             datos.push({
-              id: proveedor.id,
-              nombre: proveedor.nombre,
-              direccion: proveedor.direccion,
-              telefono: proveedor.telefono,
-              email: proveedor.email,
+              id: producto.id,
+              nombre: producto.nombre,
+              descripcion: producto.direccion,
+              precio_venta: producto.precio_venta,
+              // email: producto.email,
             });
           });
-          setData(datos);
+          setTablaProductos(datos);
         }
       });
     } catch (error) {
-      console.log("Problemas al mostrar proveedores", error);
+      console.log("Problemas al mostrar productos", error);
     }
   };
 
@@ -95,45 +136,50 @@ const PuntoVenta = (props) => {
     setTituloModal("Agregar");
     setModalCargarProveedor(true);
   };
-  const handleCloseModalAgregarProveedor = () => {
-    setDatosProveedor([]);
-    setModalCargarProveedor(false);
-  };
+  // const handleCloseModalAgregarProveedor = () => {
+  //   setDatosProveedor([]);
+  //   setModalCargarProveedor(false);
+  // };
 
-  const handleEliminarProveedor = async (row) => {
-    await Swal.fire({
-      title: "Esta seguro de borrar este proveedor?",
-      text: "",
-      icon: "warning",
-      showCancelButton: true,
-      showConfirmButton: true,
-      confirmButtonColor: "#008185",
-      cancelButtonColor: "#EC1B23",
-      confirmButtonText: "Aceptar",
-      cancelButtonText: "Cancelar",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        ConsultasAPI.BorrarObjeto(URL_PROVEEDOR, row.id)
-          .then((response) => {
-            if (response.status === 204) {
-              Swal.fire({
-                title: "Proveedor Eliminado Exitosamente",
-                text: "Esta acción no se podrá deshacer",
-                icon: "success",
-              });
-            } else {
-              Swal.fire({
-                title: "Error: problema con la eliminación",
-                text: "El Proveedor no se pudo borrar correctamente",
-                icon: "error",
-              });
-            }
-          })
-          .then(() => {
-            cargarProveedores(); // Llamo a cargarTabla después de la eliminación
-          });
-      }
-    });
+  // const handleEliminarProveedor = async (row) => {
+  //   await Swal.fire({
+  //     title: "Esta seguro de borrar este producto?",
+  //     text: "",
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     showConfirmButton: true,
+  //     confirmButtonColor: "#008185",
+  //     cancelButtonColor: "#EC1B23",
+  //     confirmButtonText: "Aceptar",
+  //     cancelButtonText: "Cancelar",
+  //   }).then((result) => {
+  //     if (result.isConfirmed) {
+  //       ConsultasAPI.BorrarObjeto(URL_PROVEEDOR, row.id)
+  //         .then((response) => {
+  //           if (response.status === 204) {
+  //             Swal.fire({
+  //               title: "Proveedor Eliminado Exitosamente",
+  //               text: "Esta acción no se podrá deshacer",
+  //               icon: "success",
+  //             });
+  //           } else {
+  //             Swal.fire({
+  //               title: "Error: problema con la eliminación",
+  //               text: "El Proveedor no se pudo borrar correctamente",
+  //               icon: "error",
+  //             });
+  //           }
+  //         })
+  //         .then(() => {
+  //           // cargarProveedores(); // Llamo a cargarTabla después de la eliminación
+  //         });
+  //     }
+  //   });
+  // };
+
+  const handleSelectProducto = (selected) => {
+    setSelectedOption(selected[0]);
+    console.log(selected[0]);
   };
 
   const handleEditarProveedor = async (row) => {
@@ -145,8 +191,8 @@ const PuntoVenta = (props) => {
   };
 
   var limpiarFiltros = function () {
-    setNombre("");
-    setEmail("");
+    // setNombre("");
+    // setEmail("");
   };
   return (
     <Container className="mt-4 mb-4 mainSection">
@@ -155,22 +201,10 @@ const PuntoVenta = (props) => {
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "center", // Centra verticalmente los elementos hijos
+            alignItems: "center",
           }}
         >
           <h2 className="py-2 fw ml-10">PuntoVenta</h2>
-
-          <Button
-            className="btn"
-            style={{
-              justifyContent: "center",
-              alignItems: "center",
-              marginRight: 10,
-            }}
-            onClick={handleOpenModalAgregarProveedor}
-          >
-            Agregar
-          </Button>
         </Card.Header>
         <Card.Body className="mb-13" style={{ paddingBottom: 0 }}>
           <Row
@@ -184,13 +218,22 @@ const PuntoVenta = (props) => {
                   alignItems: "center",
                 }}
               >
-                <Form.Label>Nombre:</Form.Label>
-                <Form.Control
+                <Form.Label>Producto:</Form.Label>
+                {/* <Form.Control
                   type="text"
                   value={nombre}
                   onChange={(e) => {
                     setNombre(e.target.value);
                   }}
+                  required
+                /> */}
+                <Typeahead
+                  id="autocomplete"
+                  options={tablaProductos}
+                  labelKey="nombre"
+                  onChange={handleSelectProducto}
+                  Selected={selectedOption}
+                  placeholder="Escribe aquí para autocompletar"
                   required
                 />
               </Form.Group>
@@ -201,13 +244,12 @@ const PuntoVenta = (props) => {
                   alignItems: "center",
                 }}
               >
-                <Form.Label>Email:</Form.Label>
-
+                <Form.Label>Codigo de Barras:</Form.Label>
                 <Form.Control
                   type="text"
-                  value={email}
+                  value={nombre}
                   onChange={(e) => {
-                    setEmail(e.target.value);
+                    setNombre(e.target.value);
                   }}
                   required
                 />
@@ -221,7 +263,17 @@ const PuntoVenta = (props) => {
                 display: "flex",
               }}
             >
-              <Button onClick={limpiarFiltros}>Limpiar Filtros</Button>
+              <Button
+                className="btn"
+                style={{
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginRight: 10,
+                }}
+                onClick={handleOpenModalAgregarProveedor}
+              >
+                Agregar
+              </Button>
             </Col>
           </Row>
           <Card className="mb-13">
@@ -276,7 +328,7 @@ const PuntoVenta = (props) => {
                       <Edit />
                     </IconButton>
                   ) : null}
-                  {rolUser === "ADMINISTRADOR" ? (
+                  {/* {rolUser === "ADMINISTRADOR" ? (
                     <IconButton
                       onClick={() => {
                         handleEliminarProveedor(row.original);
@@ -286,7 +338,7 @@ const PuntoVenta = (props) => {
                     >
                       <Delete />
                     </IconButton>
-                  ) : null}
+                  ) : null} */}
                 </div>
               )}
               // manualPagination
