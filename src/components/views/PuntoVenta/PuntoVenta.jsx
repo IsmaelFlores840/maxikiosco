@@ -14,7 +14,6 @@ import { darken, IconButton } from "@mui/material";
 
 const PuntoVenta = (props) => {
   const rolUser = props.rolUsuario;
-  const URL_PROVEEDOR = window.API_ROUTES.PROVEEDOR;
   const URL_PRODUCTO = window.API_ROUTES.PRODUCTO;
 
   const [pagination, setPagination] = useState({
@@ -136,46 +135,57 @@ const PuntoVenta = (props) => {
     setTituloModal("Agregar");
     setModalCargarProveedor(true);
   };
+
+  const getDisplayData = () => {
+    const emptyRow = {
+      id: null,
+      nombre: "",
+      descripcion: "",
+      precio_venta: "",
+      isEmpty: true, // Añade esta propiedad
+    };
+
+    const filledData = [...data];
+
+    while (filledData.length < 10) {
+      filledData.push({ ...emptyRow, id: `empty-${filledData.length}` });
+    }
+
+    return filledData.slice(0, 10);
+  };
+
+  const tableContainerStyle = {
+    maxHeight: "500px", // Ajusta esta altura según necesites
+    overflowY: "auto",
+  };
+
   // const handleCloseModalAgregarProveedor = () => {
   //   setDatosProveedor([]);
   //   setModalCargarProveedor(false);
   // };
 
-  // const handleEliminarProveedor = async (row) => {
-  //   await Swal.fire({
-  //     title: "Esta seguro de borrar este producto?",
-  //     text: "",
-  //     icon: "warning",
-  //     showCancelButton: true,
-  //     showConfirmButton: true,
-  //     confirmButtonColor: "#008185",
-  //     cancelButtonColor: "#EC1B23",
-  //     confirmButtonText: "Aceptar",
-  //     cancelButtonText: "Cancelar",
-  //   }).then((result) => {
-  //     if (result.isConfirmed) {
-  //       ConsultasAPI.BorrarObjeto(URL_PROVEEDOR, row.id)
-  //         .then((response) => {
-  //           if (response.status === 204) {
-  //             Swal.fire({
-  //               title: "Proveedor Eliminado Exitosamente",
-  //               text: "Esta acción no se podrá deshacer",
-  //               icon: "success",
-  //             });
-  //           } else {
-  //             Swal.fire({
-  //               title: "Error: problema con la eliminación",
-  //               text: "El Proveedor no se pudo borrar correctamente",
-  //               icon: "error",
-  //             });
-  //           }
-  //         })
-  //         .then(() => {
-  //           // cargarProveedores(); // Llamo a cargarTabla después de la eliminación
-  //         });
-  //     }
-  //   });
-  // };
+  const buscarProducto = async (codigo_barras) => {
+    console.log("Buscando producto con código de barras:", codigo_barras);
+
+    try {
+      const response = await ConsultasAPI.ObtenerObjeto(
+        URL_PRODUCTO + "buscarProducto/",
+        codigo_barras
+      );
+      console.log("Producto encontrado:", response.data);
+
+      // Aquí puedes actualizar el estado con el producto encontrado
+      // setProducto(response.data);
+    } catch (error) {
+      if (error.response && error.response.status === 404) {
+        console.warn("Producto no encontrado.");
+        // Aquí podrías limpiar el estado o mostrar un mensaje al usuario
+        // setProducto(null);
+      } else {
+        console.error("Error en la búsqueda:", error);
+      }
+    }
+  };
 
   const handleSelectProducto = (selected) => {
     setSelectedOption(selected[0]);
@@ -183,11 +193,10 @@ const PuntoVenta = (props) => {
   };
 
   const handleEditarProveedor = async (row) => {
-    const proveedor = await ConsultasAPI.ObtenerObjeto(URL_PROVEEDOR, row.id);
-    setDatosProveedor(proveedor.data);
-
-    setTituloModal("Editar");
-    setModalCargarProveedor(true);
+    // const proveedor = await ConsultasAPI.ObtenerObjeto(URL_PROVEEDOR, row.id);
+    // setDatosProveedor(proveedor.data);
+    // setTituloModal("Editar");
+    // setModalCargarProveedor(true);
   };
 
   var limpiarFiltros = function () {
@@ -250,6 +259,7 @@ const PuntoVenta = (props) => {
                   value={nombre}
                   onChange={(e) => {
                     setNombre(e.target.value);
+                    buscarProducto(e.target.value);
                   }}
                   required
                 />
@@ -280,12 +290,17 @@ const PuntoVenta = (props) => {
             <MaterialReactTable
               className="w-100"
               columns={columns}
-              data={data}
+              data={getDisplayData()}
               muiTablePaperProps={{
                 elevation: 0,
                 sx: {
                   borderRadius: "0",
                   // border: "1px dashed #e0e0e0",
+                },
+              }}
+              muiTableContainerProps={{
+                sx: {
+                  maxHeight: "400px", // Altura para aproximadamente 10 filas
                 },
               }}
               muiTableBodyProps={{
@@ -315,40 +330,38 @@ const PuntoVenta = (props) => {
               localization={MRT_Localization_ES}
               enableRowActions
               positionActionsColumn="last"
-              renderRowActions={({ row }) => (
-                <div className="d-flex">
-                  {rolUser === "ADMINISTRADOR" ? (
-                    <IconButton
-                      onClick={() => {
-                        handleEditarProveedor(row.original);
-                      }}
-                      title="Editar"
-                      variant="outline-info"
-                    >
-                      <Edit />
-                    </IconButton>
-                  ) : null}
-                  {/* {rolUser === "ADMINISTRADOR" ? (
-                    <IconButton
-                      onClick={() => {
-                        handleEliminarProveedor(row.original);
-                      }}
-                      title="Eliminar"
-                      variant="outline-info"
-                    >
-                      <Delete />
-                    </IconButton>
-                  ) : null} */}
-                </div>
-              )}
+              renderRowActions={({ row }) => {
+                // Verifica si es una fila vacía
+                const isEmptyRow =
+                  String(row.id).startsWith("empty-") ||
+                  (row.nombre === "" &&
+                    row.descripcion === "" &&
+                    row.precio_venta === "");
+
+                return (
+                  <div className="d-flex">
+                    {rolUser === "ADMINISTRADOR" &&
+                    !isEmptyRow &&
+                    row.nombre ? (
+                      <IconButton
+                        onClick={() => handleEditarProveedor(row.original)}
+                        title="Editar"
+                        variant="outline-info"
+                      >
+                        <Edit />
+                      </IconButton>
+                    ) : null}
+                  </div>
+                );
+              }}
               // manualPagination
               // manualFiltering
-              muiTablePaginationProps={{
-                rowsPerPageOptions: [10],
-              }}
+              // muiTablePaginationProps={{
+              //   rowsPerPageOptions: [10],
+              // }}
               enablePagination={true}
               rowCount={count}
-              onPaginationChange={setPagination} //hoist pagination state to your state when it changes internally
+              // onPaginationChange={setPagination} //hoist pagination state to your state when it changes internally
               onColumnFiltersChange={(value) => {
                 setColumnFilters(value);
               }}
