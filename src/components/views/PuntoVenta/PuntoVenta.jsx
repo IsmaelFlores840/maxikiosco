@@ -25,51 +25,14 @@ const PuntoVenta = (props) => {
   const [data, setData] = useState([]);
   const [selectedOption, setSelectedOption] = useState("");
   const [tablaProductos, setTablaProductos] = useState([]);
+  const [productosTabla, setProductosTabla] = useState([]);
 
   const [modalCargarProveedor, setModalCargarProveedor] = useState(false);
   const [nombre, setNombre] = useState("");
-  const [tituloModal, setTituloModal] = useState("");
-  const [datosProveedor, setDatosProveedor] = useState([]);
 
   useEffect(() => {
-    // cargarProveedores();
     cargarProductos();
   }, [modalCargarProveedor]);
-
-  // const cargarProveedores = async () => {
-  //   try {
-  //     await ConsultasAPI.ListarObjetos(
-  //       URL_PROVEEDOR,
-  //       pagination.pageIndex,
-  //       pagination.pageSize,
-  //       columnFilters,
-  //       null,
-  //       null,
-  //       null,
-  //       null,
-  //       null,
-  //       null
-  //     ).then((response) => {
-  //       let proveedores = response.data.results;
-  //       setCount(response.data.count);
-  //       if (proveedores) {
-  //         let datos = [];
-  //         proveedores.forEach((proveedor) => {
-  //           datos.push({
-  //             id: proveedor.id,
-  //             nombre: proveedor.nombre,
-  //             direccion: proveedor.direccion,
-  //             telefono: proveedor.telefono,
-  //             email: proveedor.email,
-  //           });
-  //         });
-  //         setData(datos);
-  //       }
-  //     });
-  //   } catch (error) {
-  //     console.log("Problemas al mostrar proveedores", error);
-  //   }
-  // };
 
   const cargarProductos = async () => {
     try {
@@ -96,7 +59,6 @@ const PuntoVenta = (props) => {
               nombre: producto.nombre,
               descripcion: producto.direccion,
               precio_venta: producto.precio_venta,
-              // email: producto.email,
             });
           });
           setTablaProductos(datos);
@@ -115,94 +77,84 @@ const PuntoVenta = (props) => {
       size: 15,
     },
     {
-      header: "Teléfono",
-      accessorKey: "telefono",
+      header: "Precio",
+      accessorKey: "precio_venta",
       size: 20,
     },
     {
-      header: "Dirección",
-      accessorKey: "direccion",
+      header: "Descripción",
+      accessorKey: "descripcion",
       size: 20,
     },
     {
-      header: "Email",
-      accessorKey: "email",
+      header: "Stock",
+      accessorKey: "stock",
+      size: 20,
+    },
+    {
+      header: "Categoría",
+      accessorKey: "categoria",
       size: 20,
     },
   ]);
 
   const handleOpenModalAgregarProveedor = () => {
-    setTituloModal("Agregar");
     setModalCargarProveedor(true);
   };
 
-  const getDisplayData = () => {
-    const emptyRow = {
-      id: null,
-      nombre: "",
-      descripcion: "",
-      precio_venta: "",
-      isEmpty: true, // Añade esta propiedad
-    };
-
-    const filledData = [...data];
-
-    while (filledData.length < 10) {
-      filledData.push({ ...emptyRow, id: `empty-${filledData.length}` });
-    }
-
-    return filledData.slice(0, 10);
-  };
-
-  const tableContainerStyle = {
-    maxHeight: "500px", // Ajusta esta altura según necesites
-    overflowY: "auto",
-  };
-
-  // const handleCloseModalAgregarProveedor = () => {
-  //   setDatosProveedor([]);
-  //   setModalCargarProveedor(false);
-  // };
-
   const buscarProducto = async (codigo_barras) => {
-    console.log("Buscando producto con código de barras:", codigo_barras);
-
     try {
       const response = await ConsultasAPI.ObtenerObjeto(
         URL_PRODUCTO + "buscarProducto/",
         codigo_barras
       );
-      console.log("Producto encontrado:", response.data);
 
-      // Aquí puedes actualizar el estado con el producto encontrado
-      // setProducto(response.data);
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        console.warn("Producto no encontrado.");
-        // Aquí podrías limpiar el estado o mostrar un mensaje al usuario
-        // setProducto(null);
+      if (response.status === 200) {
+        if (
+          productosTabla.some(
+            (item) => item.codigo_barras === response.data.codigo_barras
+          )
+        ) {
+          console.warn("El producto ya está en la tabla.");
+          return; // No agregar duplicados, sale de la función
+        }
+
+        const productoFormateado = {
+          // Formatear el producto antes de agregarlo
+          ...response.data,
+          precio_venta: response.data.precio_venta
+            ? "$ " + response.data.precio_venta
+            : "",
+          categoria: response.data.categoria_detalle?.nombre || "Sin categoría",
+        };
+
+        setProductosTabla((prev) => [...prev, productoFormateado]);
+        setData((prevData) => [...prevData, productoFormateado]);
+        setNombre("");
       } else {
-        console.error("Error en la búsqueda:", error);
+        console.warn("Producto no encontrado.");
       }
+    } catch (error) {
+      console.error("Error en la búsqueda:", error);
     }
   };
 
   const handleSelectProducto = (selected) => {
     setSelectedOption(selected[0]);
-    console.log(selected[0]);
   };
 
-  const handleEditarProveedor = async (row) => {
-    // const proveedor = await ConsultasAPI.ObtenerObjeto(URL_PROVEEDOR, row.id);
-    // setDatosProveedor(proveedor.data);
-    // setTituloModal("Editar");
-    // setModalCargarProveedor(true);
+  const sacarDeTabla = (producto) => () => {
+    setProductosTabla((prev) =>
+      prev.filter((item) => item.codigo_barras !== producto.codigo_barras)
+    );
+
+    setData((prev) =>
+      prev.filter((item) => item.codigo_barras !== producto.codigo_barras)
+    );
+
+    console.log("Producto eliminado de la tabla:", producto);
   };
 
-  var limpiarFiltros = function () {
-    // setNombre("");
-    // setEmail("");
-  };
   return (
     <Container className="mt-4 mb-4 mainSection">
       <Card>
@@ -228,14 +180,6 @@ const PuntoVenta = (props) => {
                 }}
               >
                 <Form.Label>Producto:</Form.Label>
-                {/* <Form.Control
-                  type="text"
-                  value={nombre}
-                  onChange={(e) => {
-                    setNombre(e.target.value);
-                  }}
-                  required
-                /> */}
                 <Typeahead
                   id="autocomplete"
                   options={tablaProductos}
@@ -290,19 +234,7 @@ const PuntoVenta = (props) => {
             <MaterialReactTable
               className="w-100"
               columns={columns}
-              data={getDisplayData()}
-              muiTablePaperProps={{
-                elevation: 0,
-                sx: {
-                  borderRadius: "0",
-                  // border: "1px dashed #e0e0e0",
-                },
-              }}
-              muiTableContainerProps={{
-                sx: {
-                  maxHeight: "400px", // Altura para aproximadamente 10 filas
-                },
-              }}
+              data={data}
               muiTableBodyProps={{
                 sx: (theme) => ({
                   "& tr:nth-of-type(odd)": {
@@ -319,13 +251,14 @@ const PuntoVenta = (props) => {
                 showColumnFilters: true,
               }}
               editingMode="modal" //default
+              enableEditing
               enableRowSelection={false} //enable some features
               enableColumnOrdering={false}
               enableHiding={false}
               enableColumnActions={false}
               enableSorting={false}
-              displayColumnDefOptions={{ "mrt-row-actions": { size: 10 } }} //change width of actions column to 300px
-              enableGlobalFilter={false} //turn off a feature
+              // displayColumnDefOptions={{ "mrt-row-actions": { size: 10 } }} //change width of actions column to 300px
+              // enableGlobalFilter={false} //turn off a feature
               enableFilters={false}
               localization={MRT_Localization_ES}
               enableRowActions
@@ -340,25 +273,32 @@ const PuntoVenta = (props) => {
 
                 return (
                   <div className="d-flex">
-                    {rolUser === "ADMINISTRADOR" &&
-                    !isEmptyRow &&
-                    row.nombre ? (
+                    {rolUser === "ADMINISTRADOR" ? (
                       <IconButton
-                        onClick={() => handleEditarProveedor(row.original)}
+                        onClick={console.log("editar")}
                         title="Editar"
                         variant="outline-info"
                       >
                         <Edit />
                       </IconButton>
                     ) : null}
+                    {rolUser === "ADMINISTRADOR" ? (
+                      <IconButton
+                        onClick={sacarDeTabla(row.original)}
+                        title="Eliminar"
+                        variant="outline-info"
+                      >
+                        <Delete />
+                      </IconButton>
+                    ) : null}
                   </div>
                 );
               }}
-              // manualPagination
+              manualPagination
               // manualFiltering
-              // muiTablePaginationProps={{
-              //   rowsPerPageOptions: [10],
-              // }}
+              muiTablePaginationProps={{
+                rowsPerPageOptions: [10],
+              }}
               enablePagination={true}
               rowCount={count}
               // onPaginationChange={setPagination} //hoist pagination state to your state when it changes internally
