@@ -22,6 +22,7 @@ export function ModalCargarProducto(props) {
   // const URL_ROL = window.API_ROUTES.ROL;
 
   const [nombre, setNombre] = useState("");
+  const [codigo, setCodigo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState("");
   const [stock, setStock] = useState("");
@@ -29,6 +30,7 @@ export function ModalCargarProducto(props) {
   const [tablaCategoria, setTablaCategoria] = useState([]);
   const [tablaProveedor, setTablaProveedor] = useState([]);
   const [proveedor, setProveedor] = useState("");
+  const [estado, setEstado] = useState("");
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -163,6 +165,7 @@ export function ModalCargarProducto(props) {
   };
 
   const clear = () => {
+    setCodigo("");
     setDescripcion("");
     setNombre("");
     setPrecio("");
@@ -178,6 +181,30 @@ export function ModalCargarProducto(props) {
     setProveedor(tablaProveedor.filter((x) => x.id === parseInt(proveedor))[0]);
   };
 
+  const buscarProducto = async (codigo_barras) => {
+    try {
+      const response = await ConsultasAPI.ObtenerObjeto(
+        URL_PRODUCTO + "buscarProducto/",
+        codigo_barras
+      );
+
+      if (response.status === 200) {
+        console.log(response.data);
+        setNombre(response.data.nombre);
+        setPrecio(response.data.precio_venta);
+        setDescripcion(response.data.descripcion);
+        setStock(response.data.stock);
+        setCategoria(response.data.categoria_detalle.nombre);
+        setProveedor(response.data.proveedor);
+        setEstado(response.data.estado_producto);
+      } else {
+        console.warn("Producto no encontrado.");
+      }
+    } catch (error) {
+      console.error("Error en la búsqueda:", error);
+    }
+  };
+
   return (
     <Modal show={props.show} size="xl">
       <Modal.Header closeButton onClick={handleClose}>
@@ -191,6 +218,30 @@ export function ModalCargarProducto(props) {
         <Modal.Body style={{ width: "100%" }}>
           <Card className="m-3">
             <Card.Body className="mb-7">
+              {props.tituloModal === "Consultar" ? (
+                <Row>
+                  <Col>
+                    <Form.Group
+                      style={{
+                        alignItems: "center",
+                      }}
+                    >
+                      <Form.Label>Codigo de Barras:</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={codigo}
+                        onChange={(e) => {
+                          setCodigo(e.target.value);
+                          if (e.target.value !== "") {
+                            buscarProducto(e.target.value);
+                          }
+                        }}
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              ) : null}
               <Row className="mb-3">
                 <Col>
                   <Form.Group
@@ -205,6 +256,7 @@ export function ModalCargarProducto(props) {
                       <Form.Control
                         type="text"
                         value={nombre}
+                        readOnly={props.tituloModal === "Consultar"}
                         onChange={(e) => {
                           setNombre(e.target.value);
                         }}
@@ -220,6 +272,7 @@ export function ModalCargarProducto(props) {
                       <Form.Control
                         type="text"
                         value={precio}
+                        readOnly={props.tituloModal === "Consultar"}
                         onChange={(e) => {
                           const inputValue = e.target.value;
                           const precioVenta = inputValue.replace(/\D/g, "");
@@ -233,49 +286,81 @@ export function ModalCargarProducto(props) {
               </Row>
               <Row className="mb-3">
                 <Col>
-                  <Form.Group
-                    style={{ alignContent: "center", justifyContent: "center" }}
-                  >
-                    <Form.Label>Categoría:</Form.Label>
-                    <Form.Select
-                      value={categoria ? categoria.id : ""}
-                      onChange={(event) => {
-                        handleTablaCategoriaChange(event.target.value);
+                  {props.tituloModal !== "Consultar" ? (
+                    <Form.Group
+                      style={{
+                        alignContent: "center",
+                        justifyContent: "center",
                       }}
-                      required
                     >
-                      <option hidden>Elegir Categoria</option>
-                      {tablaCategoria.length > 0
-                        ? tablaCategoria.map((categoria) => (
-                            <option key={categoria.id} value={categoria.id}>
-                              {categoria.nombre}
-                            </option>
-                          ))
-                        : null}
-                    </Form.Select>
-                  </Form.Group>
+                      <Form.Label>Categoría:</Form.Label>
+                      <Form.Select
+                        value={categoria ? categoria.id : ""}
+                        onChange={(event) => {
+                          handleTablaCategoriaChange(event.target.value);
+                        }}
+                        required
+                      >
+                        <option hidden>Elegir Categoria</option>
+                        {tablaCategoria.length > 0
+                          ? tablaCategoria.map((categoria) => (
+                              <option key={categoria.id} value={categoria.id}>
+                                {categoria.nombre}
+                              </option>
+                            ))
+                          : null}
+                      </Form.Select>
+                    </Form.Group>
+                  ) : (
+                    <Form.Group style={{ alignContent: "center" }}>
+                      <Form.Label>Categoría:</Form.Label>
+                      <Col>
+                        <Form.Control
+                          type="text"
+                          value={categoria ? categoria : ""}
+                          readOnly={props.tituloModal === "Consultar"}
+                        />
+                      </Col>
+                    </Form.Group>
+                  )}
                 </Col>
                 <Col>
-                  <Form.Group
-                    style={{ alignContent: "center", justifyContent: "center" }}
-                  >
-                    <Form.Label>Proveedor:</Form.Label>
-                    <Form.Select
-                      value={proveedor ? proveedor.id : ""}
-                      onChange={(event) => {
-                        handleTablaProveedorChange(event.target.value);
+                  {props.tituloModal !== "Consultar" ? (
+                    <Form.Group
+                      style={{
+                        alignContent: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      <option hidden>Elegir Proveedor</option>
-                      {tablaProveedor.length > 0
-                        ? tablaProveedor.map((proveedor) => (
-                            <option key={proveedor.id} value={proveedor.id}>
-                              {proveedor.nombre}
-                            </option>
-                          ))
-                        : null}
-                    </Form.Select>
-                  </Form.Group>
+                      <Form.Label>Proveedor:</Form.Label>
+                      <Form.Select
+                        value={proveedor ? proveedor.id : ""}
+                        onChange={(event) => {
+                          handleTablaProveedorChange(event.target.value);
+                        }}
+                      >
+                        <option hidden>Elegir Proveedor</option>
+                        {tablaProveedor.length > 0
+                          ? tablaProveedor.map((proveedor) => (
+                              <option key={proveedor.id} value={proveedor.id}>
+                                {proveedor.nombre}
+                              </option>
+                            ))
+                          : null}
+                      </Form.Select>
+                    </Form.Group>
+                  ) : (
+                    <Form.Group style={{ alignContent: "center" }}>
+                      <Form.Label>Proveedor:</Form.Label>
+                      <Col>
+                        <Form.Control
+                          type="text"
+                          value={proveedor ? proveedor : ""}
+                          readOnly={props.tituloModal === "Consultar"}
+                        />
+                      </Col>
+                    </Form.Group>
+                  )}
                 </Col>
               </Row>
               <Row className="mb-3">
@@ -293,10 +378,25 @@ export function ModalCargarProducto(props) {
                         const stock = inputValue.replace(/\D/g, ""); // Filtrar caracteres no numéricos y limitar la longitud a dos
                         setStock(stock);
                       }}
+                      readOnly={props.tituloModal === "Consultar"}
                       required
                     />
                   </Form.Group>
                 </Col>
+                {props.tituloModal === "Consultar" ? (
+                  <Col>
+                    <Form.Group style={{ alignContent: "center" }}>
+                      <Form.Label>Estado:</Form.Label>
+                      <Col>
+                        <Form.Control
+                          type="text"
+                          value={estado ? estado : ""}
+                          readOnly={props.tituloModal === "Consultar"}
+                        />
+                      </Col>
+                    </Form.Group>
+                  </Col>
+                ) : null}
               </Row>
               <Row className="mb-3" style={{ justifyContent: "center" }}>
                 <Col>
@@ -306,6 +406,7 @@ export function ModalCargarProducto(props) {
                       type="text"
                       value={descripcion}
                       onChange={(e) => setDescripcion(e.target.value)}
+                      readOnly={props.tituloModal === "Consultar"}
                       required
                     />
                   </Form.Group>
@@ -318,9 +419,12 @@ export function ModalCargarProducto(props) {
           <Button className="btn boton m-3" onClick={handleClose}>
             Cancelar
           </Button>
-          <Button className="btn boton m-3" type="submit">
-            {props.tituloModal === "Editar" ? "Modificar" : "Generar"} Producto
-          </Button>
+          {props.tituloModal !== "Consultar" ? (
+            <Button className="btn boton m-3" type="submit">
+              {props.tituloModal === "Editar" ? "Modificar" : "Generar"}{" "}
+              Producto
+            </Button>
+          ) : null}
         </Modal.Footer>
       </Form>
     </Modal>

@@ -144,6 +144,7 @@ const Productos = (props) => {
     datetimeRefHasta.current.setState({ inputValue: "" });
     datetimeRefDesde.current.setState({ inputValue: "" });
   };
+
   const cargarProductos = async () => {
     try {
       const response = await ConsultasAPI.ListarObjetos(
@@ -158,6 +159,7 @@ const Productos = (props) => {
         categoria ? categoria.nombre : ""
       );
       const productos = response.data.results;
+      console.log(productos);
       if (productos) {
         let datos = [];
         productos.forEach((producto) => {
@@ -166,7 +168,9 @@ const Productos = (props) => {
             nombre: producto.nombre ? producto.nombre : "",
             categoria: producto.categoria_detalle.nombre,
             stock: producto.stock ? producto.stock : "",
-            estado: producto.estado ? "Activo" : "Inactivo",
+            estado: producto.estado_producto
+              ? producto.estado_producto
+              : "Inactivo",
             precio: producto.precio_venta ? producto.precio_venta : "",
             total: producto.precio_venta * producto.stock, //arreglar esto mas tarde
           });

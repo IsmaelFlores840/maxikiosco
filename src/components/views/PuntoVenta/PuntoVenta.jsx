@@ -2,7 +2,7 @@ import { Container, Col, Row, Card, Button, Form } from "react-bootstrap";
 import { MRT_Localization_ES } from "material-react-table/locales/es";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { MaterialReactTable } from "material-react-table";
-// import ModalCargarProveedor from "./ModalCargarProveedor";
+import ModalCargarProducto from "../Productos/ModalCargarProducto";
 import ConsultasAPI from "../../../helpers/consultasAPI";
 import "react-datetime/css/react-datetime.css";
 import BtnVolver from "../../common/BtnVolver";
@@ -26,13 +26,31 @@ const PuntoVenta = (props) => {
   const [selectedOption, setSelectedOption] = useState("");
   const [tablaProductos, setTablaProductos] = useState([]);
   const [productosTabla, setProductosTabla] = useState([]);
-
-  const [modalCargarProveedor, setModalCargarProveedor] = useState(false);
+  const [tituloModal, setTituloModal] = useState("");
+  const [modalConsulta, setModalConsulta] = useState(false);
   const [nombre, setNombre] = useState("");
 
   useEffect(() => {
     cargarProductos();
-  }, [modalCargarProveedor]);
+  }, [props.show]);
+
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.key === "F2") {
+        // Detecta específicamente la tecla F2
+        handleOpenModalConsulta();
+        // Aquí puedes agregar más lógica si necesitas
+      }
+    };
+
+    // Agregar el event listener al montar el componente
+    window.addEventListener("keydown", handleKeyPress);
+
+    // Limpiar el event listener al desmontar el componente
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, []); // El array vacío [] asegura que solo se ejecute una vez
 
   const cargarProductos = async () => {
     try {
@@ -59,6 +77,7 @@ const PuntoVenta = (props) => {
               nombre: producto.nombre,
               descripcion: producto.direccion,
               precio_venta: producto.precio_venta,
+              label: producto.nombre + " - $ " + producto.precio_venta, // Nuevo campo formateado
             });
           });
           setTablaProductos(datos);
@@ -86,11 +105,11 @@ const PuntoVenta = (props) => {
       accessorKey: "descripcion",
       size: 20,
     },
-    {
-      header: "Stock",
-      accessorKey: "stock",
-      size: 20,
-    },
+    // {
+    //   header: "Stock",
+    //   accessorKey: "stock",
+    //   size: 20,
+    // },
     {
       header: "Categoría",
       accessorKey: "categoria",
@@ -99,7 +118,7 @@ const PuntoVenta = (props) => {
   ]);
 
   const handleOpenModalAgregarProveedor = () => {
-    setModalCargarProveedor(true);
+    setModalConsulta(true);
   };
 
   const buscarProducto = async (codigo_barras) => {
@@ -110,6 +129,7 @@ const PuntoVenta = (props) => {
       );
 
       if (response.status === 200) {
+        console.log(response.data);
         if (
           productosTabla.some(
             (item) => item.codigo_barras === response.data.codigo_barras
@@ -155,6 +175,17 @@ const PuntoVenta = (props) => {
     console.log("Producto eliminado de la tabla:", producto);
   };
 
+  const handleCloseModalConsulta = () => {
+    setTituloModal("");
+
+    setModalConsulta(false);
+  };
+
+  const handleOpenModalConsulta = () => {
+    setTituloModal("Consultar");
+    setModalConsulta(true);
+  };
+
   return (
     <Container className="mt-4 mb-4 mainSection">
       <Card>
@@ -183,7 +214,7 @@ const PuntoVenta = (props) => {
                 <Typeahead
                   id="autocomplete"
                   options={tablaProductos}
-                  labelKey="nombre"
+                  labelKey="label"
                   onChange={handleSelectProducto}
                   Selected={selectedOption}
                   placeholder="Escribe aquí para autocompletar"
@@ -203,7 +234,9 @@ const PuntoVenta = (props) => {
                   value={nombre}
                   onChange={(e) => {
                     setNombre(e.target.value);
-                    buscarProducto(e.target.value);
+                    if (e.target.value !== "") {
+                      buscarProducto(e.target.value);
+                    }
                   }}
                   required
                 />
@@ -273,7 +306,7 @@ const PuntoVenta = (props) => {
 
                 return (
                   <div className="d-flex">
-                    {rolUser === "ADMINISTRADOR" ? (
+                    {/* {rolUser === "ADMINISTRADOR" ? (
                       <IconButton
                         onClick={console.log("editar")}
                         title="Editar"
@@ -281,7 +314,7 @@ const PuntoVenta = (props) => {
                       >
                         <Edit />
                       </IconButton>
-                    ) : null}
+                    ) : null} */}
                     {rolUser === "ADMINISTRADOR" ? (
                       <IconButton
                         onClick={sacarDeTabla(row.original)}
@@ -294,12 +327,12 @@ const PuntoVenta = (props) => {
                   </div>
                 );
               }}
-              manualPagination
+              // manualPagination
               // manualFiltering
               muiTablePaginationProps={{
                 rowsPerPageOptions: [10],
               }}
-              enablePagination={true}
+              enablePagination={false} //para mostrar la paginación al final de la tabla
               rowCount={count}
               // onPaginationChange={setPagination} //hoist pagination state to your state when it changes internally
               onColumnFiltersChange={(value) => {
@@ -325,12 +358,11 @@ const PuntoVenta = (props) => {
         </Card.Body>
       </Card>
 
-      {/* <ModalCargarProveedor
-        onClose={handleCloseModalAgregarProveedor}
-        show={modalCargarProveedor}
+      <ModalCargarProducto
+        onClose={handleCloseModalConsulta}
+        show={modalConsulta}
         tituloModal={tituloModal}
-        datosProveedor={datosProveedor}
-      /> */}
+      />
     </Container>
   );
 };
