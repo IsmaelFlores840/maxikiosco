@@ -159,7 +159,6 @@ const Productos = (props) => {
         categoria ? categoria.nombre : ""
       );
       const productos = response.data.results;
-      console.log(productos);
       if (productos) {
         let datos = [];
         productos.forEach((producto) => {

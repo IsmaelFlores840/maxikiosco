@@ -9,12 +9,13 @@ import BtnVolver from "../../common/BtnVolver";
 import { Edit, Delete } from "@mui/icons-material";
 import Swal from "sweetalert2";
 import { Typeahead } from "react-bootstrap-typeahead";
-
+import Notificaciones from "../../../helpers/notificacionesToast";
 import { darken, IconButton } from "@mui/material";
 
 const PuntoVenta = (props) => {
   const rolUser = props.rolUsuario;
   const URL_PRODUCTO = window.API_ROUTES.PRODUCTO;
+  const URL_VENTA = window.API_ROUTES.VENTA;
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -29,6 +30,7 @@ const PuntoVenta = (props) => {
   const [tituloModal, setTituloModal] = useState("");
   const [modalConsulta, setModalConsulta] = useState(false);
   const [nombre, setNombre] = useState("");
+  const [totalCompra, setTotalCompra] = useState(0);
 
   useEffect(() => {
     cargarProductos();
@@ -51,6 +53,21 @@ const PuntoVenta = (props) => {
       window.removeEventListener("keydown", handleKeyPress);
     };
   }, []); // El array vacío [] asegura que solo se ejecute una vez
+
+  useEffect(() => {
+    calcularTotalCompra();
+  }, [data]);
+
+  const calcularTotalCompra = () => {
+    let total = 0;
+    productosTabla.forEach((producto) => {
+      const precio = parseFloat(
+        producto.precio_venta.replace(/[^0-9.-]+/g, "")
+      ); // Elimina caracteres no numéricos
+      total += isNaN(precio) ? 0 : precio; // Suma 0 si el precio no es válido
+    });
+    setTotalCompra(total);
+  };
 
   const cargarProductos = async () => {
     try {
@@ -185,18 +202,68 @@ const PuntoVenta = (props) => {
     setTituloModal("Consultar");
     setModalConsulta(true);
   };
+  const cobrar = async () => {
+    if (!data || data.length === 0) {
+      console.log(data);
+      Notificaciones.notificacion("No hay productos para cobrar.");
+    }
+    try {
+      const venta = {
+        productos: data, // Aquí envías los productos seleccionados
+        total: totalCompra,
+      };
+
+      const response = await ConsultasAPI.CrearObjeto(URL_VENTA, venta);
+
+      if (response.status === 201) {
+        Notificaciones.notificacion("Venta creada exitosamente.");
+        setData([]); // Limpia los datos después de crear la venta
+        setProductosTabla([]);
+      } else {
+        Notificaciones.notificacion("Error al crear la venta.");
+      }
+    } catch (error) {
+      console.error("Error al crear la venta:", error);
+      Notificaciones.notificacion("Error al procesar la venta.");
+    }
+  };
 
   return (
     <Container className="mt-4 mb-4 mainSection">
       <Card>
         <Card.Header
           style={{
-            display: "flex",
+            // display: "flex",
             justifyContent: "space-between",
-            alignItems: "center",
+            // alignItems: "center",
           }}
         >
-          <h2 className="py-2 fw ml-10">PuntoVenta</h2>
+          <Row className="align-items-center">
+            <Col>
+              <h2>PuntoVenta</h2>
+            </Col>
+            <Col style={{ paddingLeft: "50px" }}>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <h3 style={{ whiteSpace: "nowrap", marginRight: "8px" }}>
+                  Total: $
+                </h3>
+                <div
+                  style={{
+                    flex: 1 /* Ocupa todo el espacio restante */,
+                    border: "2px solid rgb(213, 217, 223)",
+                    borderRadius: "5px",
+                    padding: "3px 8px",
+                    backgroundColor: "#ffffff",
+                    fontWeight: "bold",
+                    textAlign: "right" /* Alinea el texto a la derecha */,
+                    fontSize: "25px", //tamaño de la letra
+                  }}
+                >
+                  {totalCompra}
+                </div>
+              </div>
+            </Col>
+          </Row>
         </Card.Header>
         <Card.Body className="mb-13" style={{ paddingBottom: 0 }}>
           <Row
@@ -260,6 +327,17 @@ const PuntoVenta = (props) => {
                 onClick={handleOpenModalAgregarProveedor}
               >
                 Agregar
+              </Button>
+              <Button
+                className="btn"
+                style={{
+                  justifyContent: "center",
+                  alignItems: "center",
+                  marginRight: 10,
+                }}
+                onClick={cobrar}
+              >
+                Cobrar
               </Button>
             </Col>
           </Row>
