@@ -163,6 +163,7 @@ const PuntoVenta = (props) => {
             ? "$ " + response.data.precio_venta
             : "",
           categoria: response.data.categoria_detalle?.nombre || "Sin categoría",
+          id: response.data.id,
         };
 
         setProductosTabla((prev) => [...prev, productoFormateado]);
@@ -202,29 +203,40 @@ const PuntoVenta = (props) => {
     setTituloModal("Consultar");
     setModalConsulta(true);
   };
+
   const cobrar = async () => {
     if (!data || data.length === 0) {
-      console.log(data);
       Notificaciones.notificacion("No hay productos para cobrar.");
+      return;
     }
+
     try {
       const venta = {
-        productos: data, // Aquí envías los productos seleccionados
         total: totalCompra,
+        productos: data.map((item) => ({
+          producto: { id: item.producto.id },
+          cantidad: item.cantidad,
+        })),
       };
 
-      const response = await ConsultasAPI.CrearObjeto(URL_VENTA, venta);
+      const response = await ConsultasAPI.CrearObjeto(
+        URL_VENTA + "crearVenta", // Sin la barra final
+        venta
+      );
 
       if (response.status === 201) {
         Notificaciones.notificacion("Venta creada exitosamente.");
-        setData([]); // Limpia los datos después de crear la venta
+        setData([]);
         setProductosTabla([]);
       } else {
         Notificaciones.notificacion("Error al crear la venta.");
       }
     } catch (error) {
       console.error("Error al crear la venta:", error);
-      Notificaciones.notificacion("Error al procesar la venta.");
+      Notificaciones.notificacion(
+        "Error al procesar la venta: " +
+          (error.response?.data?.error || error.message)
+      );
     }
   };
 
