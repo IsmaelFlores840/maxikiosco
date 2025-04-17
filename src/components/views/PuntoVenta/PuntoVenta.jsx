@@ -122,11 +122,11 @@ const PuntoVenta = (props) => {
       accessorKey: "descripcion",
       size: 20,
     },
-    // {
-    //   header: "Stock",
-    //   accessorKey: "stock",
-    //   size: 20,
-    // },
+    {
+      header: "Cantidad",
+      accessorKey: "cantidad",
+      size: 20,
+    },
     {
       header: "Categoría",
       accessorKey: "categoria",
@@ -146,7 +146,7 @@ const PuntoVenta = (props) => {
       );
 
       if (response.status === 200) {
-        console.log(response.data);
+        // console.log(response.data);
         if (
           productosTabla.some(
             (item) => item.codigo_barras === response.data.codigo_barras
@@ -164,6 +164,7 @@ const PuntoVenta = (props) => {
             : "",
           categoria: response.data.categoria_detalle?.nombre || "Sin categoría",
           id: response.data.id,
+          cantidad: 1, // Asignar una cantidad inicial de 1
         };
 
         setProductosTabla((prev) => [...prev, productoFormateado]);
@@ -213,21 +214,15 @@ const PuntoVenta = (props) => {
     try {
       const venta = {
         total: totalCompra,
-        productos: data.map((item) => ({
-          producto: { id: item.producto.id },
-          cantidad: item.cantidad,
-        })),
+        productos: data,
       };
-
-      const response = await ConsultasAPI.CrearObjeto(
-        URL_VENTA + "crearVenta", // Sin la barra final
-        venta
-      );
+      console.log(venta);
+      const response = await ConsultasAPI.CrearObjeto(URL_VENTA, venta);
 
       if (response.status === 201) {
         Notificaciones.notificacion("Venta creada exitosamente.");
-        setData([]);
-        setProductosTabla([]);
+        // setData([]);
+        // setProductosTabla([]);
       } else {
         Notificaciones.notificacion("Error al crear la venta.");
       }
