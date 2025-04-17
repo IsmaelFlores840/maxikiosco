@@ -240,9 +240,7 @@ const PuntoVenta = (props) => {
       <Card>
         <Card.Header
           style={{
-            // display: "flex",
             justifyContent: "space-between",
-            // alignItems: "center",
           }}
         >
           <Row className="align-items-center">

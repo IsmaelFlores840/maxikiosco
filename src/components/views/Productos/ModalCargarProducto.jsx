@@ -8,24 +8,30 @@ import {
   ModalFooter,
   Button,
 } from "react-bootstrap";
-// import Datetime from "react-datetime";
-// import { MRT_Localization_ES } from "material-react-table/locales/es";
 import "react-datetime/css/react-datetime.css";
 import ConsultasAPI from "../../../helpers/consultasAPI";
-import moment from "moment";
 import Swal from "sweetalert2";
+import { MaterialReactTable } from "material-react-table";
+import { Delete } from "@mui/icons-material";
+import { darken, IconButton } from "@mui/material";
 
 export function ModalCargarProducto(props) {
   const URL_PRODUCTO = window.API_ROUTES.PRODUCTO;
   const URL_CATEGORIA = window.API_ROUTES.CATEGORIA;
   const URL_PROVEEDOR = window.API_ROUTES.PROVEEDOR;
-  // const URL_ROL = window.API_ROUTES.ROL;
+  const [productosTabla, setProductosTabla] = useState([]);
+  const [data, setData] = useState([]);
+  // const [count, setCount] = useState();
 
+  const [columnFilters, setColumnFilters] = useState([]);
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
   const [nombre, setNombre] = useState("");
-  const [codigo, setCodigo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState("");
-  const [stock, setStock] = useState("");
+  const [codigo_barras, setCodigoBarras] = useState("");
   const [categoria, setCategoria] = useState("");
   const [tablaCategoria, setTablaCategoria] = useState([]);
   const [tablaProveedor, setTablaProveedor] = useState([]);
@@ -49,7 +55,7 @@ export function ModalCargarProducto(props) {
       setPrecio(
         props.datosProducto.precio_venta ? props.datosProducto.precio_venta : ""
       );
-      setStock(props.datosProducto.stock ? props.datosProducto.stock : "");
+      // setCodigoBarras(props.datosProducto.stock ? props.datosProducto.stock : "");
       setCategoria(
         props.datosProducto.categoria && props.datosProducto.categoria_detalle
           ? props.datosProducto.categoria_detalle
@@ -61,6 +67,24 @@ export function ModalCargarProducto(props) {
     }
   }, [props.show]);
 
+  const columns = useMemo(() => [
+    {
+      header: "Nombre",
+      accessorKey: "nombre",
+      size: 15,
+    },
+    {
+      header: "Precio",
+      accessorKey: "precio_venta",
+      size: 20,
+    },
+    {
+      header: "Descripción",
+      accessorKey: "descripcion",
+      size: 20,
+    },
+  ]);
+
   const crearProducto = async () => {
     try {
       const result = await Swal.fire({
@@ -69,7 +93,7 @@ export function ModalCargarProducto(props) {
         icon: "warning",
         showCancelButton: true,
         showConfirmButton: true,
-        confirmButtonColor: "#008185",
+        // confirmButtonColor: "#008185",
         cancelButtonColor: "#EC1B23",
         confirmButtonText: "Aceptar",
         cancelButtonText: "Cancelar",
@@ -80,7 +104,7 @@ export function ModalCargarProducto(props) {
           nombre: nombre,
           descripcion: descripcion,
           precio_venta: precio,
-          stock: stock,
+          // stock: codigo_barras,
           categoria: categoria,
           // proveedor: proveedor,
         };
@@ -124,7 +148,6 @@ export function ModalCargarProducto(props) {
               descripcion: categoria.descripcion,
             });
           });
-          // console.log(datos);
           setTablaCategoria(datos);
         }
       });
@@ -137,6 +160,9 @@ export function ModalCargarProducto(props) {
     try {
       await ConsultasAPI.ListarObjetos(
         URL_PROVEEDOR,
+        pagination.pageIndex,
+        pagination.pageSize,
+        columnFilters,
         null,
         null,
         null,
@@ -165,11 +191,10 @@ export function ModalCargarProducto(props) {
   };
 
   const clear = () => {
-    setCodigo("");
     setDescripcion("");
     setNombre("");
     setPrecio("");
-    setStock("");
+    setCodigoBarras("");
     setCategoria("");
     setProveedor("");
   };
@@ -179,6 +204,14 @@ export function ModalCargarProducto(props) {
   };
   const handleTablaProveedorChange = (proveedor) => {
     setProveedor(tablaProveedor.filter((x) => x.id === parseInt(proveedor))[0]);
+  };
+  const clean = () => {
+    setDescripcion("");
+    setNombre("");
+    setPrecio("");
+    setCodigoBarras("");
+    setCategoria("");
+    setProveedor("");
   };
 
   const buscarProducto = async (codigo_barras) => {
@@ -193,7 +226,7 @@ export function ModalCargarProducto(props) {
         setNombre(response.data.nombre);
         setPrecio(response.data.precio_venta);
         setDescripcion(response.data.descripcion);
-        setStock(response.data.stock);
+        setCodigoBarras(response.data.stock);
         setCategoria(response.data.categoria_detalle.nombre);
         setProveedor(response.data.proveedor);
         setEstado(response.data.estado_producto);
@@ -203,6 +236,33 @@ export function ModalCargarProducto(props) {
     } catch (error) {
       console.error("Error en la búsqueda:", error);
     }
+  };
+
+  function format(input) {
+    var num = input.toString().replace(/\./g, "");
+    // if (!isNaN(num)) {
+    num = num
+      .split("")
+      .reverse()
+      .join("")
+      .replace(/(?=\d*\.?)(\d{3})/g, "$1.");
+    num = num.split("").reverse().join("").replace(/^[\.]/, "");
+    input = num;
+    setPrecio(input);
+    return num;
+    // }
+  }
+
+  const sacarDeTabla = (producto) => () => {
+    setProductosTabla((prev) =>
+      prev.filter((item) => item.codigo_barras !== producto.codigo_barras)
+    );
+
+    setData((prev) =>
+      prev.filter((item) => item.codigo_barras !== producto.codigo_barras)
+    );
+
+    console.log("Producto eliminado de la tabla:", producto);
   };
 
   return (
@@ -216,32 +276,22 @@ export function ModalCargarProducto(props) {
         style={{ width: "100%" }}
       >
         <Modal.Body style={{ width: "100%" }}>
-          <Card className="m-3">
-            <Card.Body className="mb-7">
-              {props.tituloModal === "Consultar" ? (
-                <Row>
-                  <Col>
-                    <Form.Group
-                      style={{
-                        alignItems: "center",
-                      }}
-                    >
-                      <Form.Label>Codigo de Barras:</Form.Label>
-                      <Form.Control
-                        type="text"
-                        value={codigo}
-                        onChange={(e) => {
-                          setCodigo(e.target.value);
-                          if (e.target.value !== "") {
-                            buscarProducto(e.target.value);
-                          }
-                        }}
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
-                </Row>
-              ) : null}
+          <Card className="mb-3">
+            <Card.Body className="mb-4">
+              <Row
+                as={Col}
+                md="5"
+                className="justify-content-end"
+                style={{
+                  paddingRight: "15px",
+                  paddingTop: "5px",
+                }}
+              >
+                <Button className="fw-bold" onClick={clean}>
+                  {/* fw-bold pone las palabras en negrita */}
+                  Limpiar
+                </Button>
+              </Row>
               <Row className="mb-3">
                 <Col>
                   <Form.Group
@@ -270,15 +320,14 @@ export function ModalCargarProducto(props) {
                     <Form.Label>Precio:</Form.Label>
                     <Col>
                       <Form.Control
-                        type="text"
                         value={precio}
+                        required
                         readOnly={props.tituloModal === "Consultar"}
                         onChange={(e) => {
                           const inputValue = e.target.value;
                           const precioVenta = inputValue.replace(/\D/g, "");
-                          setPrecio(precioVenta);
+                          format(precioVenta);
                         }}
-                        required
                       />
                     </Col>
                   </Form.Group>
@@ -355,6 +404,7 @@ export function ModalCargarProducto(props) {
                       <Col>
                         <Form.Control
                           type="text"
+                          // placeholder={"no posee proveedor"}
                           value={proveedor ? proveedor : ""}
                           readOnly={props.tituloModal === "Consultar"}
                         />
@@ -368,15 +418,15 @@ export function ModalCargarProducto(props) {
                   <Form.Group
                     style={{ alignContent: "center", justifyContent: "center" }}
                   >
-                    <Form.Label>Stock:</Form.Label>
+                    <Form.Label>Codigo de Barras:</Form.Label>
 
                     <Form.Control
                       type="text"
-                      value={stock}
+                      value={codigo_barras}
                       onChange={(e) => {
                         const inputValue = e.target.value;
-                        const stock = inputValue.replace(/\D/g, ""); // Filtrar caracteres no numéricos y limitar la longitud a dos
-                        setStock(stock);
+                        const codigo_barras = inputValue.replace(/\D/g, ""); // Filtrar caracteres no numéricos y limitar la longitud a dos
+                        setCodigoBarras(codigo_barras);
                       }}
                       readOnly={props.tituloModal === "Consultar"}
                       required
@@ -412,15 +462,79 @@ export function ModalCargarProducto(props) {
                   </Form.Group>
                 </Col>
               </Row>
+
+              <MaterialReactTable
+                className="w-100"
+                columns={columns}
+                data={data}
+                muiTableBodyProps={{
+                  sx: (theme) => ({
+                    "& tr:nth-of-type(odd)": {
+                      backgroundColor: darken(
+                        theme.palette.background.default,
+                        0.1
+                      ),
+                    },
+                    fontFamily: "Roboto, sans-serif", // Configuración de la tipografía para las filas pares
+                  }),
+                }}
+                initialState={{
+                  columnVisibility: { id: false }, //hide firstName column by default
+                  showColumnFilters: true,
+                }}
+                editingMode="modal" //default
+                enableEditing
+                enableRowSelection={false} //enable some features
+                enableColumnOrdering={false}
+                enableHiding={false}
+                enableColumnActions={false}
+                enableSorting={false}
+                // displayColumnDefOptions={{ "mrt-row-actions": { size: 10 } }} //change width of actions column to 300px
+                // enableGlobalFilter={false} //turn off a feature
+                enableFilters={false}
+                // localization={MRT_Localization_ES}
+                enableRowActions
+                positionActionsColumn="last"
+                renderRowActions={({ row }) => {
+                  return (
+                    <div className="d-flex">
+                      {
+                        <IconButton
+                          onClick={sacarDeTabla(row.original)}
+                          title="Eliminar"
+                          variant="outline-info"
+                        >
+                          <Delete />
+                        </IconButton>
+                      }
+                    </div>
+                  );
+                }}
+                // manualPagination
+                // manualFiltering
+                muiTablePaginationProps={{
+                  rowsPerPageOptions: [10],
+                }}
+                enablePagination={false} //para mostrar la paginación al final de la tabla
+                // rowCount={count}
+                // onPaginationChange={setPagination} //hoist pagination state to your state when it changes internally
+                onColumnFiltersChange={(value) => {
+                  setColumnFilters(value);
+                }}
+                state={{
+                  columnFilters,
+                  pagination,
+                }}
+              />
             </Card.Body>
           </Card>
         </Modal.Body>
         <Modal.Footer>
-          <Button className="btn boton m-3" onClick={handleClose}>
+          <Button className="btn boton m-2" onClick={handleClose}>
             Cancelar
           </Button>
           {props.tituloModal !== "Consultar" ? (
-            <Button className="btn boton m-3" type="submit">
+            <Button className="btn boton m-2" type="submit">
               {props.tituloModal === "Editar" ? "Modificar" : "Generar"}{" "}
               Producto
             </Button>

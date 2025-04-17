@@ -88,6 +88,7 @@ export function ModalCargarProveedor(props) {
                   cancelButtonColor: "#008185",
                   cancelButtonText: "Aceptar",
                 });
+                clear();
               } else {
                 Swal.fire({
                   title: "Error",
