@@ -11,17 +11,11 @@ import {
 import "react-datetime/css/react-datetime.css";
 import ConsultasAPI from "../../../helpers/consultasAPI";
 import Swal from "sweetalert2";
-import { MaterialReactTable } from "material-react-table";
-import { Delete } from "@mui/icons-material";
-import { darken, IconButton } from "@mui/material";
 
 export function ModalCargarProducto(props) {
   const URL_PRODUCTO = window.API_ROUTES.PRODUCTO;
   const URL_CATEGORIA = window.API_ROUTES.CATEGORIA;
   const URL_PROVEEDOR = window.API_ROUTES.PROVEEDOR;
-  const [productosTabla, setProductosTabla] = useState([]);
-  const [data, setData] = useState([]);
-  // const [count, setCount] = useState();
 
   const [columnFilters, setColumnFilters] = useState([]);
   const [pagination, setPagination] = useState({
@@ -37,6 +31,7 @@ export function ModalCargarProducto(props) {
   const [tablaProveedor, setTablaProveedor] = useState([]);
   const [proveedor, setProveedor] = useState("");
   const [estado, setEstado] = useState("");
+  const [stock, setStock] = useState("");
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -44,46 +39,34 @@ export function ModalCargarProducto(props) {
   };
 
   const handleClose = () => {
-    clear();
+    clean();
     props.onClose();
   };
   useEffect(() => {
     cargarCategoria();
     cargarProveedor();
     if (props.tituloModal === "Editar") {
+      console.log(props.datosProducto);
       setNombre(props.datosProducto.nombre ? props.datosProducto.nombre : "");
-      setPrecio(
+      format(
         props.datosProducto.precio_venta ? props.datosProducto.precio_venta : ""
       );
-      // setCodigoBarras(props.datosProducto.stock ? props.datosProducto.stock : "");
+      setCodigoBarras(
+        props.datosProducto.codigo_barras
+          ? props.datosProducto.codigo_barras
+          : ""
+      );
       setCategoria(
         props.datosProducto.categoria && props.datosProducto.categoria_detalle
           ? props.datosProducto.categoria_detalle
           : ""
       );
+      setStock(props.datosProducto.stock ? props.datosProducto.stock : "");
       setDescripcion(
         props.datosProducto.descripcion ? props.datosProducto.descripcion : ""
       );
     }
   }, [props.show]);
-
-  const columns = useMemo(() => [
-    {
-      header: "Nombre",
-      accessorKey: "nombre",
-      size: 15,
-    },
-    {
-      header: "Precio",
-      accessorKey: "precio_venta",
-      size: 20,
-    },
-    {
-      header: "Descripción",
-      accessorKey: "descripcion",
-      size: 20,
-    },
-  ]);
 
   const crearProducto = async () => {
     try {
@@ -103,12 +86,13 @@ export function ModalCargarProducto(props) {
         const producto = {
           nombre: nombre,
           descripcion: descripcion,
-          precio_venta: precio,
-          // stock: codigo_barras,
+          precio_venta: precio.replace(/\./g, "").replace(",", "."),
+          stock: stock,
+          codigo_barras: codigo_barras,
           categoria: categoria,
-          // proveedor: proveedor,
+          proveedor: proveedor,
         };
-
+        console.log(producto);
         await ConsultasAPI.CrearObjeto(URL_PRODUCTO, producto);
 
         Swal.fire({
@@ -120,8 +104,7 @@ export function ModalCargarProducto(props) {
           cancelButtonColor: "#008185",
           cancelButtonText: "Aceptar",
         });
-
-        clear();
+        clean();
       }
     } catch (error) {
       console.error("Error al crear el producto:", error);
@@ -190,15 +173,6 @@ export function ModalCargarProducto(props) {
     }
   };
 
-  const clear = () => {
-    setDescripcion("");
-    setNombre("");
-    setPrecio("");
-    setCodigoBarras("");
-    setCategoria("");
-    setProveedor("");
-  };
-
   const handleTablaCategoriaChange = (categoria) => {
     setCategoria(tablaCategoria.filter((x) => x.id === parseInt(categoria))[0]);
   };
@@ -212,6 +186,8 @@ export function ModalCargarProducto(props) {
     setCodigoBarras("");
     setCategoria("");
     setProveedor("");
+    setStock("");
+    // setData([]);
   };
 
   const buscarProducto = async (codigo_barras) => {
@@ -230,6 +206,7 @@ export function ModalCargarProducto(props) {
         setCategoria(response.data.categoria_detalle.nombre);
         setProveedor(response.data.proveedor);
         setEstado(response.data.estado_producto);
+        // setStock(response.data.stock);
       } else {
         console.warn("Producto no encontrado.");
       }
@@ -240,7 +217,6 @@ export function ModalCargarProducto(props) {
 
   function format(input) {
     var num = input.toString().replace(/\./g, "");
-    // if (!isNaN(num)) {
     num = num
       .split("")
       .reverse()
@@ -250,31 +226,14 @@ export function ModalCargarProducto(props) {
     input = num;
     setPrecio(input);
     return num;
-    // }
   }
-
-  const sacarDeTabla = (producto) => () => {
-    setProductosTabla((prev) =>
-      prev.filter((item) => item.codigo_barras !== producto.codigo_barras)
-    );
-
-    setData((prev) =>
-      prev.filter((item) => item.codigo_barras !== producto.codigo_barras)
-    );
-
-    console.log("Producto eliminado de la tabla:", producto);
-  };
 
   return (
     <Modal show={props.show} size="xl">
       <Modal.Header closeButton onClick={handleClose}>
         <Modal.Title> {props.tituloModal} Producto</Modal.Title>
       </Modal.Header>
-      <Form
-        onSubmit={handleSubmit}
-        // onKeyDown={handleFormKeyDown}
-        style={{ width: "100%" }}
-      >
+      <Form onSubmit={handleSubmit} style={{ width: "100%" }}>
         <Modal.Body style={{ width: "100%" }}>
           <Card className="mb-3">
             <Card.Body className="mb-4">
@@ -419,7 +378,6 @@ export function ModalCargarProducto(props) {
                     style={{ alignContent: "center", justifyContent: "center" }}
                   >
                     <Form.Label>Codigo de Barras:</Form.Label>
-
                     <Form.Control
                       type="text"
                       value={codigo_barras}
@@ -433,6 +391,27 @@ export function ModalCargarProducto(props) {
                     />
                   </Form.Group>
                 </Col>
+                <Col md={6}>
+                  <Form.Group
+                    style={{ alignContent: "center", justifyContent: "center" }}
+                  >
+                    <Form.Label>Stock:</Form.Label>
+
+                    <Form.Control
+                      // type="text"
+                      value={stock}
+                      onChange={(e) => {
+                        const inputValue = e.target.value;
+                        const cantidad_stock = inputValue.replace(/\D/g, ""); // Filtrar caracteres no numéricos y limitar la longitud a dos
+                        setStock(cantidad_stock);
+                      }}
+                      readOnly={props.tituloModal === "Consultar"}
+                      required
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row>
                 {props.tituloModal === "Consultar" ? (
                   <Col>
                     <Form.Group style={{ alignContent: "center" }}>
@@ -462,70 +441,6 @@ export function ModalCargarProducto(props) {
                   </Form.Group>
                 </Col>
               </Row>
-
-              <MaterialReactTable
-                className="w-100"
-                columns={columns}
-                data={data}
-                muiTableBodyProps={{
-                  sx: (theme) => ({
-                    "& tr:nth-of-type(odd)": {
-                      backgroundColor: darken(
-                        theme.palette.background.default,
-                        0.1
-                      ),
-                    },
-                    fontFamily: "Roboto, sans-serif", // Configuración de la tipografía para las filas pares
-                  }),
-                }}
-                initialState={{
-                  columnVisibility: { id: false }, //hide firstName column by default
-                  showColumnFilters: true,
-                }}
-                editingMode="modal" //default
-                enableEditing
-                enableRowSelection={false} //enable some features
-                enableColumnOrdering={false}
-                enableHiding={false}
-                enableColumnActions={false}
-                enableSorting={false}
-                // displayColumnDefOptions={{ "mrt-row-actions": { size: 10 } }} //change width of actions column to 300px
-                // enableGlobalFilter={false} //turn off a feature
-                enableFilters={false}
-                // localization={MRT_Localization_ES}
-                enableRowActions
-                positionActionsColumn="last"
-                renderRowActions={({ row }) => {
-                  return (
-                    <div className="d-flex">
-                      {
-                        <IconButton
-                          onClick={sacarDeTabla(row.original)}
-                          title="Eliminar"
-                          variant="outline-info"
-                        >
-                          <Delete />
-                        </IconButton>
-                      }
-                    </div>
-                  );
-                }}
-                // manualPagination
-                // manualFiltering
-                muiTablePaginationProps={{
-                  rowsPerPageOptions: [10],
-                }}
-                enablePagination={false} //para mostrar la paginación al final de la tabla
-                // rowCount={count}
-                // onPaginationChange={setPagination} //hoist pagination state to your state when it changes internally
-                onColumnFiltersChange={(value) => {
-                  setColumnFilters(value);
-                }}
-                state={{
-                  columnFilters,
-                  pagination,
-                }}
-              />
             </Card.Body>
           </Card>
         </Modal.Body>

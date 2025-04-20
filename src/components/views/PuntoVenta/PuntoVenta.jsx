@@ -66,8 +66,21 @@ const PuntoVenta = (props) => {
       ); // Elimina caracteres no numéricos
       total += isNaN(precio) ? 0 : precio; // Suma 0 si el precio no es válido
     });
-    setTotalCompra(total);
+    format(total);
   };
+
+  function format(input) {
+    var num = input.toString().replace(/\./g, "");
+    num = num
+      .split("")
+      .reverse()
+      .join("")
+      .replace(/(?=\d*\.?)(\d{3})/g, "$1.");
+    num = num.split("").reverse().join("").replace(/^[\.]/, "");
+    input = num;
+    setTotalCompra(input);
+    return num;
+  }
 
   const cargarProductos = async () => {
     try {
