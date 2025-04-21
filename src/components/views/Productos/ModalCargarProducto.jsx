@@ -92,7 +92,6 @@ export function ModalCargarProducto(props) {
           categoria: categoria,
           proveedor: proveedor,
         };
-        console.log(producto);
         await ConsultasAPI.CrearObjeto(URL_PRODUCTO, producto);
 
         Swal.fire({
@@ -198,7 +197,6 @@ export function ModalCargarProducto(props) {
       );
 
       if (response.status === 200) {
-        console.log(response.data);
         setNombre(response.data.nombre);
         setPrecio(response.data.precio_venta);
         setDescripcion(response.data.descripcion);
@@ -206,7 +204,6 @@ export function ModalCargarProducto(props) {
         setCategoria(response.data.categoria_detalle.nombre);
         setProveedor(response.data.proveedor);
         setEstado(response.data.estado_producto);
-        // setStock(response.data.stock);
       } else {
         console.warn("Producto no encontrado.");
       }

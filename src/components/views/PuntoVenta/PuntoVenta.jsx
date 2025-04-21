@@ -2,7 +2,7 @@ import { Container, Col, Row, Card, Button, Form } from "react-bootstrap";
 import { MRT_Localization_ES } from "material-react-table/locales/es";
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { MaterialReactTable } from "material-react-table";
-import ModalCargarProducto from "../Productos/ModalCargarProducto";
+import ModalEditar from "./ModalEditar";
 import ConsultasAPI from "../../../helpers/consultasAPI";
 import "react-datetime/css/react-datetime.css";
 import BtnVolver from "../../common/BtnVolver";
@@ -28,31 +28,32 @@ const PuntoVenta = (props) => {
   const [tablaProductos, setTablaProductos] = useState([]);
   const [productosTabla, setProductosTabla] = useState([]);
   const [tituloModal, setTituloModal] = useState("");
-  const [modalConsulta, setModalConsulta] = useState(false);
+  const [modalEditar, setModalEditar] = useState(false);
   const [nombre, setNombre] = useState("");
   const [totalCompra, setTotalCompra] = useState(0);
+  const [datos, setDatos] = useState([]);
 
   useEffect(() => {
     cargarProductos();
   }, [props.show]);
 
-  useEffect(() => {
-    const handleKeyPress = (e) => {
-      if (e.key === "F2") {
-        // Detecta específicamente la tecla F2
-        handleOpenModalConsulta();
-        // Aquí puedes agregar más lógica si necesitas
-      }
-    };
+  // useEffect(() => {
+  //   const handleKeyPress = (e) => {
+  //     if (e.key === "F2") {
+  //       // Detecta específicamente la tecla F2
+  //       handleOpenModalConsulta();
+  //       // Aquí puedes agregar más lógica si necesitas
+  //     }
+  //   };
 
-    // Agregar el event listener al montar el componente
-    window.addEventListener("keydown", handleKeyPress);
+  //   // Agregar el event listener al montar el componente
+  //   window.addEventListener("keydown", handleKeyPress);
 
-    // Limpiar el event listener al desmontar el componente
-    return () => {
-      window.removeEventListener("keydown", handleKeyPress);
-    };
-  }, []); // El array vacío [] asegura que solo se ejecute una vez
+  //   // Limpiar el event listener al desmontar el componente
+  //   return () => {
+  //     window.removeEventListener("keydown", handleKeyPress);
+  //   };
+  // }, []); // El array vacío [] asegura que solo se ejecute una vez
 
   useEffect(() => {
     calcularTotalCompra();
@@ -61,10 +62,11 @@ const PuntoVenta = (props) => {
   const calcularTotalCompra = () => {
     let total = 0;
     productosTabla.forEach((producto) => {
-      const precio = parseFloat(
+      const precioUnitario = parseFloat(
         producto.precio_venta.replace(/[^0-9.-]+/g, "")
-      ); // Elimina caracteres no numéricos
-      total += isNaN(precio) ? 0 : precio; // Suma 0 si el precio no es válido
+      );
+      const cantidad = producto.cantidad || 1;
+      total += (isNaN(precioUnitario) ? 0 : precioUnitario) * cantidad;
     });
     format(total);
   };
@@ -98,7 +100,6 @@ const PuntoVenta = (props) => {
       ).then((response) => {
         let productos = response.data.results;
         setCount(response.data.count);
-        // console.log(productos);
         if (productos) {
           let datos = [];
           productos.forEach((producto) => {
@@ -126,7 +127,7 @@ const PuntoVenta = (props) => {
       size: 15,
     },
     {
-      header: "Precio",
+      header: "Precio Unitario",
       accessorKey: "precio_venta",
       size: 20,
     },
@@ -141,15 +142,14 @@ const PuntoVenta = (props) => {
       size: 20,
     },
     {
-      header: "Categoría",
-      accessorKey: "categoria",
+      header: "Importe",
       size: 20,
+      Cell: ({ row }) =>
+        `$ ${(row.original.precio_unitario * row.original.cantidad).toFixed(
+          2
+        )}`,
     },
   ]);
-
-  const handleOpenModalAgregarProveedor = () => {
-    setModalConsulta(true);
-  };
 
   const buscarProducto = async (codigo_barras) => {
     try {
@@ -159,35 +159,50 @@ const PuntoVenta = (props) => {
       );
 
       if (response.status === 200) {
-        // console.log(response.data);
-        if (
-          productosTabla.some(
-            (item) => item.codigo_barras === response.data.codigo_barras
-          )
-        ) {
-          console.warn("El producto ya está en la tabla.");
-          return; // No agregar duplicados, sale de la función
+        // Verificar si el producto ya está en la tabla
+        const productoExistente = productosTabla.find(
+          (item) => item.id === response.data.id
+        );
+
+        if (productoExistente) {
+          // Si existe, incrementar la cantidad en 1
+          const nuevosProductos = productosTabla.map((item) =>
+            item.id === response.data.id
+              ? {
+                  ...item,
+                  cantidad: item.cantidad + 1,
+                  importe: (
+                    parseFloat(response.data.precio_venta) *
+                    (item.cantidad + 1)
+                  ).toFixed(2),
+                }
+              : item
+          );
+
+          setProductosTabla(nuevosProductos);
+          setData(nuevosProductos);
+          // Notificaciones.notificacion("Cantidad aumentada en 1");
+        } else {
+          // Si no existe, agregar nuevo producto con cantidad 1
+          const precioUnitario = parseFloat(response.data.precio_venta);
+          const productoFormateado = {
+            ...response.data,
+            precio_unitario: precioUnitario, // Guardamos el precio sin formato para cálculos
+            precio_venta: `$ ${precioUnitario.toFixed(2)}`, // Precio formateado para mostrar
+            cantidad: 1,
+            importe: precioUnitario.toFixed(2), // Importe inicial (precio * 1)
+            categoria:
+              response.data.categoria_detalle?.nombre || "Sin categoría",
+          };
+
+          setProductosTabla((prev) => [...prev, productoFormateado]);
+          setData((prevData) => [...prevData, productoFormateado]);
         }
-
-        const productoFormateado = {
-          // Formatear el producto antes de agregarlo
-          ...response.data,
-          precio_venta: response.data.precio_venta
-            ? "$ " + response.data.precio_venta
-            : "",
-          categoria: response.data.categoria_detalle?.nombre || "Sin categoría",
-          id: response.data.id,
-          cantidad: 1, // Asignar una cantidad inicial de 1
-        };
-
-        setProductosTabla((prev) => [...prev, productoFormateado]);
-        setData((prevData) => [...prevData, productoFormateado]);
         setNombre("");
-      } else {
-        console.warn("Producto no encontrado.");
       }
     } catch (error) {
       console.error("Error en la búsqueda:", error);
+      Notificaciones.notificacion("Error al buscar producto", "error");
     }
   };
 
@@ -199,23 +214,21 @@ const PuntoVenta = (props) => {
     setProductosTabla((prev) =>
       prev.filter((item) => item.codigo_barras !== producto.codigo_barras)
     );
-
     setData((prev) =>
       prev.filter((item) => item.codigo_barras !== producto.codigo_barras)
     );
-
-    console.log("Producto eliminado de la tabla:", producto);
   };
 
   const handleCloseModalConsulta = () => {
     setTituloModal("");
-
-    setModalConsulta(false);
+    setDatos([]);
+    setModalEditar(false);
   };
 
-  const handleOpenModalConsulta = () => {
-    setTituloModal("Consultar");
-    setModalConsulta(true);
+  const handleOpenModalConsulta = (row) => {
+    setTituloModal("Editar");
+    setDatos(row);
+    setModalEditar(true);
   };
 
   const cobrar = async () => {
@@ -246,6 +259,19 @@ const PuntoVenta = (props) => {
           (error.response?.data?.error || error.message)
       );
     }
+  };
+
+  const handleUpdateProduct = (updatedProduct) => {
+    setProductosTabla((prev) =>
+      prev.map((item) =>
+        item.id === updatedProduct.id ? updatedProduct : item
+      )
+    );
+    setData((prev) =>
+      prev.map((item) =>
+        item.id === updatedProduct.id ? updatedProduct : item
+      )
+    );
   };
 
   return (
@@ -342,7 +368,7 @@ const PuntoVenta = (props) => {
                   alignItems: "center",
                   marginRight: 10,
                 }}
-                onClick={handleOpenModalAgregarProveedor}
+                onClick={() => console.log("Agregar")}
               >
                 Agregar
               </Button>
@@ -402,18 +428,18 @@ const PuntoVenta = (props) => {
 
                 return (
                   <div className="d-flex">
-                    {/* {rolUser === "ADMINISTRADOR" ? (
+                    {rolUser === "ADMINISTRADOR" ? (
                       <IconButton
-                        onClick={console.log("editar")}
+                        onClick={() => handleOpenModalConsulta(row.original)}
                         title="Editar"
                         variant="outline-info"
                       >
                         <Edit />
                       </IconButton>
-                    ) : null} */}
+                    ) : null}
                     {rolUser === "ADMINISTRADOR" ? (
                       <IconButton
-                        onClick={sacarDeTabla(row.original)}
+                        onClick={() => sacarDeTabla(row.original)}
                         title="Eliminar"
                         variant="outline-info"
                       >
@@ -454,10 +480,12 @@ const PuntoVenta = (props) => {
         </Card.Body>
       </Card>
 
-      <ModalCargarProducto
+      <ModalEditar
         onClose={handleCloseModalConsulta}
-        show={modalConsulta}
+        show={modalEditar}
         tituloModal={tituloModal}
+        datosProducto={datos}
+        onSave={handleUpdateProduct}
       />
     </Container>
   );
