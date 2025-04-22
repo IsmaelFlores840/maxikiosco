@@ -166,10 +166,8 @@ const Productos = (props) => {
             id: producto.id ? producto.id : "",
             nombre: producto.nombre ? producto.nombre : "",
             categoria: producto.categoria_detalle.nombre,
-            stock: producto.stock ? producto.stock : "",
-            estado: producto.estado_producto
-              ? producto.estado_producto
-              : "Inactivo",
+            stock: producto.stock ? producto.stock : "0",
+            estado: producto.stock !== 0 ? "DISPONIBLE" : "AGOTADO",
             precio: producto.precio_venta ? producto.precio_venta : "",
             total: producto.precio_venta * producto.stock, //arreglar esto mas tarde
           });

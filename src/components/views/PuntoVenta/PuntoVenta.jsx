@@ -26,10 +26,10 @@ const PuntoVenta = (props) => {
   const [data, setData] = useState([]);
   const [selectedOption, setSelectedOption] = useState("");
   const [tablaProductos, setTablaProductos] = useState([]);
-  const [productosTabla, setProductosTabla] = useState([]);
-  const [tituloModal, setTituloModal] = useState("");
+
   const [modalEditar, setModalEditar] = useState(false);
-  const [nombre, setNombre] = useState("");
+  const [tituloModal, setTituloModal] = useState("");
+  const [codigoBarras, setCodigoBarras] = useState("");
   const [totalCompra, setTotalCompra] = useState(0);
   const [datos, setDatos] = useState([]);
 
@@ -61,7 +61,7 @@ const PuntoVenta = (props) => {
 
   const calcularTotalCompra = () => {
     let total = 0;
-    productosTabla.forEach((producto) => {
+    data.forEach((producto) => {
       const precioUnitario = parseFloat(
         producto.precio_venta.replace(/[^0-9.-]+/g, "")
       );
@@ -159,46 +159,60 @@ const PuntoVenta = (props) => {
       );
 
       if (response.status === 200) {
-        // Verificar si el producto ya está en la tabla
-        const productoExistente = productosTabla.find(
-          (item) => item.id === response.data.id
-        );
+        const producto = response.data;
+        const productoExistente = data.find((item) => item.id === producto.id);
 
         if (productoExistente) {
-          // Si existe, incrementar la cantidad en 1
-          const nuevosProductos = productosTabla.map((item) =>
-            item.id === response.data.id
+          // Verificar si al incrementar la cantidad supera el stock
+          if (productoExistente.cantidad + 1 > producto.stock) {
+            Swal.fire({
+              title: "Cantidad excedida",
+              text: "No hay suficiente stock disponible",
+              icon: "error",
+              confirmButtonText: "Aceptar",
+            });
+            setCodigoBarras("");
+            return; // Detener la ejecución si no hay stock suficiente
+          }
+
+          const nuevosProductos = data.map((item) =>
+            item.id === producto.id
               ? {
                   ...item,
                   cantidad: item.cantidad + 1,
                   importe: (
-                    parseFloat(response.data.precio_venta) *
+                    parseFloat(producto.precio_venta) *
                     (item.cantidad + 1)
                   ).toFixed(2),
                 }
               : item
           );
-
-          setProductosTabla(nuevosProductos);
           setData(nuevosProductos);
-          // Notificaciones.notificacion("Cantidad aumentada en 1");
         } else {
-          // Si no existe, agregar nuevo producto con cantidad 1
-          const precioUnitario = parseFloat(response.data.precio_venta);
-          const productoFormateado = {
-            ...response.data,
-            precio_unitario: precioUnitario, // Guardamos el precio sin formato para cálculos
-            precio_venta: `$ ${precioUnitario.toFixed(2)}`, // Precio formateado para mostrar
-            cantidad: 1,
-            importe: precioUnitario.toFixed(2), // Importe inicial (precio * 1)
-            categoria:
-              response.data.categoria_detalle?.nombre || "Sin categoría",
-          };
+          // Verificar si hay stock para agregar el producto (cantidad inicial = 1)
+          if (producto.stock < 1) {
+            Swal.fire({
+              title: "Cantidad excedida",
+              text: "No hay suficiente stock disponible",
+              icon: "error",
+              confirmButtonText: "Aceptar",
+            });
+            setCodigoBarras("");
+            return;
+          }
 
-          setProductosTabla((prev) => [...prev, productoFormateado]);
+          const precioUnitario = parseFloat(producto.precio_venta);
+          const productoFormateado = {
+            ...producto,
+            precio_unitario: precioUnitario,
+            precio_venta: `$ ${precioUnitario.toFixed(2)}`,
+            cantidad: 1,
+            importe: precioUnitario.toFixed(2),
+            categoria: producto.categoria_detalle?.nombre || "Sin categoría",
+          };
           setData((prevData) => [...prevData, productoFormateado]);
         }
-        setNombre("");
+        setCodigoBarras("");
       }
     } catch (error) {
       console.error("Error en la búsqueda:", error);
@@ -211,9 +225,6 @@ const PuntoVenta = (props) => {
   };
 
   const sacarDeTabla = (producto) => () => {
-    setProductosTabla((prev) =>
-      prev.filter((item) => item.codigo_barras !== producto.codigo_barras)
-    );
     setData((prev) =>
       prev.filter((item) => item.codigo_barras !== producto.codigo_barras)
     );
@@ -238,17 +249,25 @@ const PuntoVenta = (props) => {
     }
 
     try {
+      const productosFormateados = data.map((producto) => ({
+        ...producto,
+        precio_venta: parseFloat(
+          producto.precio_venta.replace("$", "").replace(/\s/g, "")
+        ),
+        importe: parseFloat(producto.importe),
+        precio_unitario: parseFloat(producto.precio_unitario),
+      }));
+
       const venta = {
-        total: totalCompra,
-        productos: data,
+        total: parseFloat(totalCompra.replace(/\./g, "").replace(",", ".")),
+        productos: productosFormateados,
       };
       console.log(venta);
       const response = await ConsultasAPI.CrearObjeto(URL_VENTA, venta);
 
       if (response.status === 201) {
         Notificaciones.notificacion("Venta creada exitosamente.");
-        // setData([]);
-        // setProductosTabla([]);
+        setData([]);
       } else {
         Notificaciones.notificacion("Error al crear la venta.");
       }
@@ -262,11 +281,6 @@ const PuntoVenta = (props) => {
   };
 
   const handleUpdateProduct = (updatedProduct) => {
-    setProductosTabla((prev) =>
-      prev.map((item) =>
-        item.id === updatedProduct.id ? updatedProduct : item
-      )
-    );
     setData((prev) =>
       prev.map((item) =>
         item.id === updatedProduct.id ? updatedProduct : item
@@ -342,9 +356,9 @@ const PuntoVenta = (props) => {
                 <Form.Label>Codigo de Barras:</Form.Label>
                 <Form.Control
                   type="text"
-                  value={nombre}
+                  value={codigoBarras}
                   onChange={(e) => {
-                    setNombre(e.target.value);
+                    setCodigoBarras(e.target.value);
                     if (e.target.value !== "") {
                       buscarProducto(e.target.value);
                     }
@@ -419,13 +433,6 @@ const PuntoVenta = (props) => {
               enableRowActions
               positionActionsColumn="last"
               renderRowActions={({ row }) => {
-                // Verifica si es una fila vacía
-                const isEmptyRow =
-                  String(row.id).startsWith("empty-") ||
-                  (row.nombre === "" &&
-                    row.descripcion === "" &&
-                    row.precio_venta === "");
-
                 return (
                   <div className="d-flex">
                     {rolUser === "ADMINISTRADOR" ? (

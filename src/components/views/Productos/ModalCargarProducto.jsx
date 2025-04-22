@@ -11,6 +11,7 @@ import {
 import "react-datetime/css/react-datetime.css";
 import ConsultasAPI from "../../../helpers/consultasAPI";
 import Swal from "sweetalert2";
+import AuthenticationHelper from "../../../helpers/authenticationHelper";
 
 export function ModalCargarProducto(props) {
   const URL_PRODUCTO = window.API_ROUTES.PRODUCTO;
@@ -35,7 +36,11 @@ export function ModalCargarProducto(props) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    crearProducto();
+    if (props.tituloModal === "Agregar") {
+      crearProducto();
+    } else {
+      modificarProducto();
+    }
   };
 
   const handleClose = () => {
@@ -46,7 +51,6 @@ export function ModalCargarProducto(props) {
     cargarCategoria();
     cargarProveedor();
     if (props.tituloModal === "Editar") {
-      console.log(props.datosProducto);
       setNombre(props.datosProducto.nombre ? props.datosProducto.nombre : "");
       format(
         props.datosProducto.precio_venta ? props.datosProducto.precio_venta : ""
@@ -61,7 +65,7 @@ export function ModalCargarProducto(props) {
           ? props.datosProducto.categoria_detalle
           : ""
       );
-      setStock(props.datosProducto.stock ? props.datosProducto.stock : "");
+      setStock(props.datosProducto.stock ? props.datosProducto.stock : "0");
       setDescripcion(
         props.datosProducto.descripcion ? props.datosProducto.descripcion : ""
       );
@@ -189,27 +193,60 @@ export function ModalCargarProducto(props) {
     // setData([]);
   };
 
-  const buscarProducto = async (codigo_barras) => {
-    try {
-      const response = await ConsultasAPI.ObtenerObjeto(
-        URL_PRODUCTO + "buscarProducto/",
-        codigo_barras
-      );
+  const modificarProducto = async () => {
+    console.log("Modificar producto", props.datosProducto);
+    Swal.fire({
+      title: "¿Estás seguro de editar este producto?",
+      text: "Esta acción no se puede revertir",
+      icon: "warning",
+      showCancelButton: true,
+      cancelButtonColor: "#EC1B23",
+      confirmButtonText: "Aceptar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const objeto = {
+            nombre: nombre,
+            descripcion: descripcion,
+            precio_venta: parseFloat(precio), // arreglar problema con precio
+            stock: stock,
+            codigo_barras: codigo_barras,
+            estado_producto: props.datosProducto.estado_producto,
+            proveedor: props.datosProducto.proveedor?.id || null,
+            categoria: props.datosProducto.categoria.id, // Cambiar a id de categoria
+            usuario_modificacion: AuthenticationHelper.getUser().id,
+          };
 
-      if (response.status === 200) {
-        setNombre(response.data.nombre);
-        setPrecio(response.data.precio_venta);
-        setDescripcion(response.data.descripcion);
-        setCodigoBarras(response.data.stock);
-        setCategoria(response.data.categoria_detalle.nombre);
-        setProveedor(response.data.proveedor);
-        setEstado(response.data.estado_producto);
-      } else {
-        console.warn("Producto no encontrado.");
+          const response = await ConsultasAPI.ModificarObjeto(
+            URL_PRODUCTO + "modificarProducto/",
+            props.datosProducto.id,
+            objeto
+          );
+
+          if (response.status === 202) {
+            Swal.fire(
+              "Edición exitosa",
+              "Se editó con Éxito el producto",
+              "success"
+            );
+            props.onClose(); // Cierra el modal
+          } else {
+            throw new Error("Respuesta inesperada del servidor");
+          }
+        } catch (error) {
+          console.error(
+            "Error detallado:",
+            error.response?.data || error.message
+          );
+          Swal.fire(
+            "Error",
+            error.response?.data?.error || "No se pudo editar el producto",
+            "error"
+          );
+        }
       }
-    } catch (error) {
-      console.error("Error en la búsqueda:", error);
-    }
+    });
   };
 
   function format(input) {
@@ -395,7 +432,6 @@ export function ModalCargarProducto(props) {
                     <Form.Label>Stock:</Form.Label>
 
                     <Form.Control
-                      // type="text"
                       value={stock}
                       onChange={(e) => {
                         const inputValue = e.target.value;
