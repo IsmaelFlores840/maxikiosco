@@ -24,7 +24,7 @@ const PuntoVenta = (props) => {
   const [count, setCount] = useState();
   const [columnFilters, setColumnFilters] = useState([]);
   const [data, setData] = useState([]);
-  const [selectedOption, setSelectedOption] = useState("");
+  const [selectedOption, setSelectedOption] = useState([]);
   const [tablaProductos, setTablaProductos] = useState([]);
 
   const [modalEditar, setModalEditar] = useState(false);
@@ -36,6 +36,10 @@ const PuntoVenta = (props) => {
   useEffect(() => {
     cargarProductos();
   }, [props.show]);
+
+  useEffect(() => {
+    calcularTotalCompra();
+  }, [data]);
 
   // useEffect(() => {
   //   const handleKeyPress = (e) => {
@@ -55,9 +59,43 @@ const PuntoVenta = (props) => {
   //   };
   // }, []); // El array vacío [] asegura que solo se ejecute una vez
 
-  useEffect(() => {
-    calcularTotalCompra();
-  }, [data]);
+  const cobrar = async () => {
+    if (!data || data.length === 0) {
+      Notificaciones.notificacion("No hay productos para cobrar.");
+      return;
+    }
+
+    try {
+      const productosFormateados = data.map((producto) => ({
+        ...producto,
+        precio_venta: parseFloat(
+          producto.precio_venta.replace("$", "").replace(/\s/g, "")
+        ),
+        importe: parseFloat(producto.importe),
+        precio_unitario: parseFloat(producto.precio_unitario),
+      }));
+
+      const venta = {
+        total: parseFloat(totalCompra.replace(/\./g, "").replace(",", ".")),
+        productos: productosFormateados,
+      };
+      console.log(venta);
+      const response = await ConsultasAPI.CrearObjeto(URL_VENTA, venta);
+
+      if (response.status === 201) {
+        Notificaciones.notificacion("Venta creada exitosamente.");
+        setData([]);
+      } else {
+        Notificaciones.notificacion("Error al crear la venta.");
+      }
+    } catch (error) {
+      console.error("Error al crear la venta:", error);
+      Notificaciones.notificacion(
+        "Error al procesar la venta: " +
+          (error.response?.data?.error || error.message)
+      );
+    }
+  };
 
   const calcularTotalCompra = () => {
     let total = 0;
@@ -70,56 +108,7 @@ const PuntoVenta = (props) => {
     });
     format(total);
   };
-
-  function format(input) {
-    var num = input.toString().replace(/\./g, "");
-    num = num
-      .split("")
-      .reverse()
-      .join("")
-      .replace(/(?=\d*\.?)(\d{3})/g, "$1.");
-    num = num.split("").reverse().join("").replace(/^[\.]/, "");
-    input = num;
-    setTotalCompra(input);
-    return num;
-  }
-
-  const cargarProductos = async () => {
-    try {
-      await ConsultasAPI.ListarObjetos(
-        URL_PRODUCTO,
-        pagination.pageIndex,
-        pagination.pageSize,
-        columnFilters,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null
-      ).then((response) => {
-        let productos = response.data.results;
-        setCount(response.data.count);
-        if (productos) {
-          let datos = [];
-          productos.forEach((producto) => {
-            datos.push({
-              id: producto.id,
-              nombre: producto.nombre,
-              descripcion: producto.direccion,
-              precio_venta: producto.precio_venta,
-              label: producto.nombre + " - $ " + producto.precio_venta, // Nuevo campo formateado
-            });
-          });
-          setTablaProductos(datos);
-        }
-      });
-    } catch (error) {
-      console.log("Problemas al mostrar productos", error);
-    }
-  };
-
-  //Columnas de la tabla Poveedores
+  //Columnas de la tabla
   const columns = useMemo(() => [
     {
       header: "Nombre",
@@ -150,6 +139,42 @@ const PuntoVenta = (props) => {
         )}`,
     },
   ]);
+
+  const cargarProductos = async () => {
+    try {
+      await ConsultasAPI.ListarObjetos(
+        URL_PRODUCTO,
+        pagination.pageIndex,
+        pagination.pageSize,
+        columnFilters,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ).then((response) => {
+        let productos = response.data.results;
+        setCount(response.data.count);
+        if (productos) {
+          let datos = [];
+          productos.forEach((producto) => {
+            datos.push({
+              id: producto.id,
+              nombre: producto.nombre,
+              descripcion: producto.direccion,
+              precio_venta: producto.precio_venta,
+              label: producto.nombre + " - $ " + producto.precio_venta, // Nuevo campo formateado
+              codigo_barras: producto.codigo_barras,
+            });
+          });
+          setTablaProductos(datos);
+        }
+      });
+    } catch (error) {
+      console.log("Problemas al mostrar productos", error);
+    }
+  };
 
   const buscarProducto = async (codigo_barras) => {
     try {
@@ -221,7 +246,8 @@ const PuntoVenta = (props) => {
   };
 
   const handleSelectProducto = (selected) => {
-    setSelectedOption(selected[0]);
+    setSelectedOption(selected || []);
+    buscarProducto(selected[0].codigo_barras);
   };
 
   const sacarDeTabla = (producto) => () => {
@@ -242,50 +268,30 @@ const PuntoVenta = (props) => {
     setModalEditar(true);
   };
 
-  const cobrar = async () => {
-    if (!data || data.length === 0) {
-      Notificaciones.notificacion("No hay productos para cobrar.");
-      return;
-    }
-
-    try {
-      const productosFormateados = data.map((producto) => ({
-        ...producto,
-        precio_venta: parseFloat(
-          producto.precio_venta.replace("$", "").replace(/\s/g, "")
-        ),
-        importe: parseFloat(producto.importe),
-        precio_unitario: parseFloat(producto.precio_unitario),
-      }));
-
-      const venta = {
-        total: parseFloat(totalCompra.replace(/\./g, "").replace(",", ".")),
-        productos: productosFormateados,
-      };
-      console.log(venta);
-      const response = await ConsultasAPI.CrearObjeto(URL_VENTA, venta);
-
-      if (response.status === 201) {
-        Notificaciones.notificacion("Venta creada exitosamente.");
-        setData([]);
-      } else {
-        Notificaciones.notificacion("Error al crear la venta.");
-      }
-    } catch (error) {
-      console.error("Error al crear la venta:", error);
-      Notificaciones.notificacion(
-        "Error al procesar la venta: " +
-          (error.response?.data?.error || error.message)
-      );
-    }
-  };
-
   const handleUpdateProduct = (updatedProduct) => {
     setData((prev) =>
       prev.map((item) =>
         item.id === updatedProduct.id ? updatedProduct : item
       )
     );
+  };
+
+  function format(input) {
+    var num = input.toString().replace(/\./g, "");
+    num = num
+      .split("")
+      .reverse()
+      .join("")
+      .replace(/(?=\d*\.?)(\d{3})/g, "$1.");
+    num = num.split("").reverse().join("").replace(/^[\.]/, "");
+    input = num;
+    setTotalCompra(input);
+    return num;
+  }
+  const clean = () => {
+    setSelectedOption([]);
+    setCodigoBarras("");
+    // setData([]);
   };
 
   return (
@@ -341,7 +347,7 @@ const PuntoVenta = (props) => {
                   options={tablaProductos}
                   labelKey="label"
                   onChange={handleSelectProducto}
-                  Selected={selectedOption}
+                  selected={selectedOption} // Asegúrate que siempre sea array
                   placeholder="Escribe aquí para autocompletar"
                   required
                 />
@@ -382,9 +388,9 @@ const PuntoVenta = (props) => {
                   alignItems: "center",
                   marginRight: 10,
                 }}
-                onClick={() => console.log("Agregar")}
+                onClick={clean}
               >
-                Agregar
+                Limpiar
               </Button>
               <Button
                 className="btn"

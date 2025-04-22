@@ -31,7 +31,6 @@ export function ModalCargarProducto(props) {
   const [tablaCategoria, setTablaCategoria] = useState([]);
   const [tablaProveedor, setTablaProveedor] = useState([]);
   const [proveedor, setProveedor] = useState("");
-  const [estado, setEstado] = useState("");
   const [stock, setStock] = useState("");
 
   const handleSubmit = (event) => {
@@ -121,6 +120,61 @@ export function ModalCargarProducto(props) {
     }
   };
 
+  const modificarProducto = async () => {
+    Swal.fire({
+      title: "¿Estás seguro de editar este producto?",
+      text: "Esta acción no se puede revertir",
+      icon: "warning",
+      showCancelButton: true,
+      cancelButtonColor: "#EC1B23",
+      confirmButtonText: "Aceptar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const objeto = {
+            nombre: nombre,
+            descripcion: descripcion,
+            precio_venta: precio.replace(/\./g, "").replace(",", "."),
+            stock: stock,
+            codigo_barras: codigo_barras,
+            estado_producto: props.datosProducto.estado_producto,
+            proveedor: proveedor ? proveedor.id : null,
+            categoria: categoria.id,
+            usuario_modificacion: AuthenticationHelper.getUser().id,
+          };
+
+          const response = await ConsultasAPI.ModificarObjeto(
+            URL_PRODUCTO + "modificarProducto/",
+            props.datosProducto.id,
+            objeto
+          );
+
+          if (response.status === 202) {
+            Swal.fire(
+              "Edición exitosa",
+              "Se editó con Éxito el producto",
+              "success"
+            );
+            props.onClose(); // Cierra el modal
+          } else {
+            throw new Error("Respuesta inesperada del servidor");
+          }
+        } catch (error) {
+          console.error(
+            "Error detallado:",
+            error.response?.data || error.message
+          );
+          Swal.fire(
+            "Error",
+            error.response?.data?.error || "No se pudo editar el producto",
+            "error"
+          );
+        }
+      }
+    });
+  };
+
   const cargarCategoria = () => {
     try {
       ConsultasAPI.ListarObjetos(URL_CATEGORIA).then((response) => {
@@ -190,63 +244,6 @@ export function ModalCargarProducto(props) {
     setCategoria("");
     setProveedor("");
     setStock("");
-    // setData([]);
-  };
-
-  const modificarProducto = async () => {
-    console.log("Modificar producto", props.datosProducto);
-    Swal.fire({
-      title: "¿Estás seguro de editar este producto?",
-      text: "Esta acción no se puede revertir",
-      icon: "warning",
-      showCancelButton: true,
-      cancelButtonColor: "#EC1B23",
-      confirmButtonText: "Aceptar",
-      cancelButtonText: "Cancelar",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const objeto = {
-            nombre: nombre,
-            descripcion: descripcion,
-            precio_venta: parseFloat(precio), // arreglar problema con precio
-            stock: stock,
-            codigo_barras: codigo_barras,
-            estado_producto: props.datosProducto.estado_producto,
-            proveedor: props.datosProducto.proveedor?.id || null,
-            categoria: props.datosProducto.categoria.id, // Cambiar a id de categoria
-            usuario_modificacion: AuthenticationHelper.getUser().id,
-          };
-
-          const response = await ConsultasAPI.ModificarObjeto(
-            URL_PRODUCTO + "modificarProducto/",
-            props.datosProducto.id,
-            objeto
-          );
-
-          if (response.status === 202) {
-            Swal.fire(
-              "Edición exitosa",
-              "Se editó con Éxito el producto",
-              "success"
-            );
-            props.onClose(); // Cierra el modal
-          } else {
-            throw new Error("Respuesta inesperada del servidor");
-          }
-        } catch (error) {
-          console.error(
-            "Error detallado:",
-            error.response?.data || error.message
-          );
-          Swal.fire(
-            "Error",
-            error.response?.data?.error || "No se pudo editar el producto",
-            "error"
-          );
-        }
-      }
-    });
   };
 
   function format(input) {
@@ -299,7 +296,6 @@ export function ModalCargarProducto(props) {
                       <Form.Control
                         type="text"
                         value={nombre}
-                        readOnly={props.tituloModal === "Consultar"}
                         onChange={(e) => {
                           setNombre(e.target.value);
                         }}
@@ -315,7 +311,6 @@ export function ModalCargarProducto(props) {
                       <Form.Control
                         value={precio}
                         required
-                        readOnly={props.tituloModal === "Consultar"}
                         onChange={(e) => {
                           const inputValue = e.target.value;
                           const precioVenta = inputValue.replace(/\D/g, "");
@@ -328,82 +323,55 @@ export function ModalCargarProducto(props) {
               </Row>
               <Row className="mb-3">
                 <Col>
-                  {props.tituloModal !== "Consultar" ? (
-                    <Form.Group
-                      style={{
-                        alignContent: "center",
-                        justifyContent: "center",
+                  <Form.Group
+                    style={{
+                      alignContent: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Form.Label>Categoría:</Form.Label>
+                    <Form.Select
+                      value={categoria ? categoria.id : ""}
+                      onChange={(event) => {
+                        handleTablaCategoriaChange(event.target.value);
                       }}
+                      required
                     >
-                      <Form.Label>Categoría:</Form.Label>
-                      <Form.Select
-                        value={categoria ? categoria.id : ""}
-                        onChange={(event) => {
-                          handleTablaCategoriaChange(event.target.value);
-                        }}
-                        required
-                      >
-                        <option hidden>Elegir Categoria</option>
-                        {tablaCategoria.length > 0
-                          ? tablaCategoria.map((categoria) => (
-                              <option key={categoria.id} value={categoria.id}>
-                                {categoria.nombre}
-                              </option>
-                            ))
-                          : null}
-                      </Form.Select>
-                    </Form.Group>
-                  ) : (
-                    <Form.Group style={{ alignContent: "center" }}>
-                      <Form.Label>Categoría:</Form.Label>
-                      <Col>
-                        <Form.Control
-                          type="text"
-                          value={categoria ? categoria : ""}
-                          readOnly={props.tituloModal === "Consultar"}
-                        />
-                      </Col>
-                    </Form.Group>
-                  )}
+                      <option hidden>Elegir Categoria</option>
+                      {tablaCategoria.length > 0
+                        ? tablaCategoria.map((categoria) => (
+                            <option key={categoria.id} value={categoria.id}>
+                              {categoria.nombre}
+                            </option>
+                          ))
+                        : null}
+                    </Form.Select>
+                  </Form.Group>
                 </Col>
                 <Col>
-                  {props.tituloModal !== "Consultar" ? (
-                    <Form.Group
-                      style={{
-                        alignContent: "center",
-                        justifyContent: "center",
+                  <Form.Group
+                    style={{
+                      alignContent: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Form.Label>Proveedor:</Form.Label>
+                    <Form.Select
+                      value={proveedor ? proveedor.id : ""}
+                      onChange={(event) => {
+                        handleTablaProveedorChange(event.target.value);
                       }}
                     >
-                      <Form.Label>Proveedor:</Form.Label>
-                      <Form.Select
-                        value={proveedor ? proveedor.id : ""}
-                        onChange={(event) => {
-                          handleTablaProveedorChange(event.target.value);
-                        }}
-                      >
-                        <option hidden>Elegir Proveedor</option>
-                        {tablaProveedor.length > 0
-                          ? tablaProveedor.map((proveedor) => (
-                              <option key={proveedor.id} value={proveedor.id}>
-                                {proveedor.nombre}
-                              </option>
-                            ))
-                          : null}
-                      </Form.Select>
-                    </Form.Group>
-                  ) : (
-                    <Form.Group style={{ alignContent: "center" }}>
-                      <Form.Label>Proveedor:</Form.Label>
-                      <Col>
-                        <Form.Control
-                          type="text"
-                          // placeholder={"no posee proveedor"}
-                          value={proveedor ? proveedor : ""}
-                          readOnly={props.tituloModal === "Consultar"}
-                        />
-                      </Col>
-                    </Form.Group>
-                  )}
+                      <option hidden>Elegir Proveedor</option>
+                      {tablaProveedor.length > 0
+                        ? tablaProveedor.map((proveedor) => (
+                            <option key={proveedor.id} value={proveedor.id}>
+                              {proveedor.nombre}
+                            </option>
+                          ))
+                        : null}
+                    </Form.Select>
+                  </Form.Group>
                 </Col>
               </Row>
               <Row className="mb-3">
@@ -420,7 +388,6 @@ export function ModalCargarProducto(props) {
                         const codigo_barras = inputValue.replace(/\D/g, ""); // Filtrar caracteres no numéricos y limitar la longitud a dos
                         setCodigoBarras(codigo_barras);
                       }}
-                      readOnly={props.tituloModal === "Consultar"}
                       required
                     />
                   </Form.Group>
@@ -438,27 +405,10 @@ export function ModalCargarProducto(props) {
                         const cantidad_stock = inputValue.replace(/\D/g, ""); // Filtrar caracteres no numéricos y limitar la longitud a dos
                         setStock(cantidad_stock);
                       }}
-                      readOnly={props.tituloModal === "Consultar"}
                       required
                     />
                   </Form.Group>
                 </Col>
-              </Row>
-              <Row>
-                {props.tituloModal === "Consultar" ? (
-                  <Col>
-                    <Form.Group style={{ alignContent: "center" }}>
-                      <Form.Label>Estado:</Form.Label>
-                      <Col>
-                        <Form.Control
-                          type="text"
-                          value={estado ? estado : ""}
-                          readOnly={props.tituloModal === "Consultar"}
-                        />
-                      </Col>
-                    </Form.Group>
-                  </Col>
-                ) : null}
               </Row>
               <Row className="mb-3" style={{ justifyContent: "center" }}>
                 <Col>
@@ -468,7 +418,6 @@ export function ModalCargarProducto(props) {
                       type="text"
                       value={descripcion}
                       onChange={(e) => setDescripcion(e.target.value)}
-                      readOnly={props.tituloModal === "Consultar"}
                       required
                     />
                   </Form.Group>
@@ -481,12 +430,9 @@ export function ModalCargarProducto(props) {
           <Button className="btn boton m-2" onClick={handleClose}>
             Cancelar
           </Button>
-          {props.tituloModal !== "Consultar" ? (
-            <Button className="btn boton m-2" type="submit">
-              {props.tituloModal === "Editar" ? "Modificar" : "Generar"}{" "}
-              Producto
-            </Button>
-          ) : null}
+          <Button className="btn boton m-2" type="submit">
+            {props.tituloModal === "Editar" ? "Modificar" : "Generar"} Producto
+          </Button>
         </Modal.Footer>
       </Form>
     </Modal>

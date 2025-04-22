@@ -9,7 +9,7 @@ import BtnVolver from "../../common/BtnVolver";
 import Datetime from "react-datetime";
 import { Edit, Delete } from "@mui/icons-material";
 import Swal from "sweetalert2";
-
+import moment from "moment";
 import { darken, IconButton } from "@mui/material";
 
 const Ventas = (props) => {
@@ -43,6 +43,25 @@ const Ventas = (props) => {
     cargarVentas();
   }, [modalVenta, fechaDesde, fechaHasta, producto]);
 
+  //Columnas de la tabla Ventas
+  const columns = useMemo(() => [
+    {
+      header: "Empleado",
+      accessorKey: "empleado",
+      size: 15,
+    },
+    {
+      header: "Fecha y hora",
+      accessorKey: "fecha",
+      size: 20,
+    },
+    {
+      header: "Total",
+      accessorKey: "total",
+      size: 20,
+    },
+  ]);
+
   const cargarVentas = () => {
     try {
       ConsultasAPI.ListarObjetos(
@@ -57,50 +76,29 @@ const Ventas = (props) => {
         null, //categoria
         null //email
       ).then((response) => {
-        let clientes = response.data.results;
+        let ventas = response.data.results;
         setCount(response.data.count);
-        if (clientes) {
+        if (ventas) {
           let datos = [];
-          clientes.forEach((venta) => {
+          ventas.forEach((venta) => {
             datos.push({
               id: venta.id,
-              nombre: venta.nombre,
-              apellido: venta.apellido,
-              direccion: venta.direccion,
-              telefono: venta.telefono,
+              empleado: venta.empleado_detalle.email,
+              fecha: venta.fecha_creacion
+                ? moment(venta.fecha_creacion, "DD/MM/YYYY HH:mm:ss").format(
+                    "DD/MM/YYYY HH:mm"
+                  )
+                : "Fecha no disponible",
+              total: "$ " + venta.total,
             });
           });
           setData(datos);
         }
       });
     } catch (error) {
-      console.log("Problemas al mostrar clientes", error);
+      console.log("Problemas al mostrar ventas", error);
     }
   };
-
-  //Columnas de la tabla Poveedores
-  const columns = useMemo(() => [
-    {
-      header: "Nombre",
-      accessorKey: "nombre",
-      size: 15,
-    },
-    {
-      header: "Apellido",
-      accessorKey: "apellido",
-      size: 20,
-    },
-    {
-      header: "Teléfono",
-      accessorKey: "telefono",
-      size: 20,
-    },
-    {
-      header: "Dirección",
-      accessorKey: "direccion",
-      size: 20,
-    },
-  ]);
 
   const handleFechaDesdeChange = (momentDate) => {
     const fechaMuestra = momentDate.format("DD/MM/YYYY");
@@ -120,10 +118,6 @@ const Ventas = (props) => {
     });
   };
 
-  const handleOpenModalAgregarVenta = () => {
-    setTituloModal("Agregar");
-    setModalVenta(true);
-  };
   const handleCloseModalVenta = () => {
     setDatosVenta([]);
     setModalVenta(false);
@@ -254,7 +248,7 @@ const Ventas = (props) => {
                 />
               </Form.Group>
             </Col>
-            <Col>
+            {/* <Col>
               <Form.Group
                 style={{
                   alignItems: "center",
@@ -271,7 +265,7 @@ const Ventas = (props) => {
                   required
                 />
               </Form.Group>
-            </Col>
+            </Col> */}
             <Col
               md={3}
               style={{
@@ -324,7 +318,7 @@ const Ventas = (props) => {
               positionActionsColumn="last"
               renderRowActions={({ row }) => (
                 <div className="d-flex">
-                  {rolUser === "ADMINISTRADOR" ? (
+                  {/* {rolUser === "ADMINISTRADOR" ? (
                     <IconButton
                       onClick={() => {
                         handleEditarVenta(row.original);
@@ -334,7 +328,7 @@ const Ventas = (props) => {
                     >
                       <Edit />
                     </IconButton>
-                  ) : null}
+                  ) : null} */}
                   {rolUser === "ADMINISTRADOR" ? (
                     <IconButton
                       onClick={() => {
