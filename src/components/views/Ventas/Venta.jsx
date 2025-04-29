@@ -329,17 +329,15 @@ const Ventas = (props) => {
                       <Edit />
                     </IconButton>
                   ) : null} */}
-                  {rolUser === "ADMINISTRADOR" ? (
-                    <IconButton
-                      onClick={() => {
-                        handleEliminarVenta(row.original);
-                      }}
-                      title="Eliminar"
-                      variant="outline-info"
-                    >
-                      <Delete />
-                    </IconButton>
-                  ) : null}
+                  <IconButton
+                    onClick={() => {
+                      handleEliminarVenta(row.original);
+                    }}
+                    title="Eliminar"
+                    variant="outline-info"
+                  >
+                    <Delete />
+                  </IconButton>
                 </div>
               )}
               // manualPagination

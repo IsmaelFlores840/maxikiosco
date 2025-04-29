@@ -258,28 +258,24 @@ const Empleados = (props) => {
               positionActionsColumn="last"
               renderRowActions={({ row }) => (
                 <div className="d-flex">
-                  {rolUser === "ADMINISTRADOR" ? (
-                    <IconButton
-                      onClick={() => {
-                        handleEditarEmpleado(row.original);
-                      }}
-                      title="Editar"
-                      variant="outline-info"
-                    >
-                      <Edit />
-                    </IconButton>
-                  ) : null}
-                  {rolUser === "ADMINISTRADOR" ? (
-                    <IconButton
-                      onClick={() => {
-                        handleEliminarEmpleado(row.original);
-                      }}
-                      title="Eliminar"
-                      variant="outline-info"
-                    >
-                      <Delete />
-                    </IconButton>
-                  ) : null}
+                  <IconButton
+                    onClick={() => {
+                      handleEditarEmpleado(row.original);
+                    }}
+                    title="Editar"
+                    variant="outline-info"
+                  >
+                    <Edit />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => {
+                      handleEliminarEmpleado(row.original);
+                    }}
+                    title="Eliminar"
+                    variant="outline-info"
+                  >
+                    <Delete />
+                  </IconButton>
                 </div>
               )}
               manualPagination

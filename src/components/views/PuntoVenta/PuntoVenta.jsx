@@ -441,24 +441,21 @@ const PuntoVenta = (props) => {
               renderRowActions={({ row }) => {
                 return (
                   <div className="d-flex">
-                    {rolUser === "ADMINISTRADOR" ? (
-                      <IconButton
-                        onClick={() => handleOpenModalConsulta(row.original)}
-                        title="Editar"
-                        variant="outline-info"
-                      >
-                        <Edit />
-                      </IconButton>
-                    ) : null}
-                    {rolUser === "ADMINISTRADOR" ? (
-                      <IconButton
-                        onClick={() => sacarDeTabla(row.original)}
-                        title="Eliminar"
-                        variant="outline-info"
-                      >
-                        <Delete />
-                      </IconButton>
-                    ) : null}
+                    <IconButton
+                      onClick={() => handleOpenModalConsulta(row.original)}
+                      title="Editar"
+                      variant="outline-info"
+                    >
+                      <Edit />
+                    </IconButton>
+
+                    <IconButton
+                      onClick={() => sacarDeTabla(row.original)}
+                      title="Eliminar"
+                      variant="outline-info"
+                    >
+                      <Delete />
+                    </IconButton>
                   </div>
                 );
               }}

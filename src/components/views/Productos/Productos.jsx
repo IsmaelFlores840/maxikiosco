@@ -395,7 +395,6 @@ const Productos = (props) => {
               positionActionsColumn="last"
               renderRowActions={({ row }) => (
                 <div className="d-flex">
-                  {rolUser === "ADMINISTRADOR" ? (
                     <IconButton
                       onClick={() => {
                         handleEditarProducto(row.original);
@@ -405,8 +404,6 @@ const Productos = (props) => {
                     >
                       <Edit />
                     </IconButton>
-                  ) : null}
-                  {rolUser === "ADMINISTRADOR" ? (
                     <IconButton
                       onClick={() => {
                         handleEliminarProducto(row.original);
@@ -416,7 +413,6 @@ const Productos = (props) => {
                     >
                       <Delete />
                     </IconButton>
-                  ) : null}
                 </div>
               )}
               // manualPagination

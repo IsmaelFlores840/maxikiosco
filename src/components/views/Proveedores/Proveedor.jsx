@@ -265,28 +265,24 @@ const Proveedores = (props) => {
               positionActionsColumn="last"
               renderRowActions={({ row }) => (
                 <div className="d-flex">
-                  {rolUser === "ADMINISTRADOR" ? (
-                    <IconButton
-                      onClick={() => {
-                        handleEditarProveedor(row.original);
-                      }}
-                      title="Editar"
-                      variant="outline-info"
-                    >
-                      <Edit />
-                    </IconButton>
-                  ) : null}
-                  {rolUser === "ADMINISTRADOR" ? (
-                    <IconButton
-                      onClick={() => {
-                        handleEliminarProveedor(row.original);
-                      }}
-                      title="Eliminar"
-                      variant="outline-info"
-                    >
-                      <Delete />
-                    </IconButton>
-                  ) : null}
+                  <IconButton
+                    onClick={() => {
+                      handleEditarProveedor(row.original);
+                    }}
+                    title="Editar"
+                    variant="outline-info"
+                  >
+                    <Edit />
+                  </IconButton>
+                  <IconButton
+                    onClick={() => {
+                      handleEliminarProveedor(row.original);
+                    }}
+                    title="Eliminar"
+                    variant="outline-info"
+                  >
+                    <Delete />
+                  </IconButton>
                 </div>
               )}
               // manualPagination
