@@ -5,9 +5,6 @@ import { MaterialReactTable } from "material-react-table";
 import { MRT_Localization_ES } from "material-react-table/locales/es";
 import moment from "moment";
 import BtnVolver from "../common/BtnVolver";
-// import { FaPlus } from "react-icons/fa";
-// import ModalGenerarCartones from "./ModalGenerarCartones";
-// import { FaEraser } from "react-icons/fa";
 
 import { darken, IconButton } from "@mui/material";
 

@@ -45,11 +45,11 @@ const Ventas = (props) => {
 
   //Columnas de la tabla Ventas
   const columns = useMemo(() => [
-    {
-      header: "Empleado",
-      accessorKey: "empleado",
-      size: 15,
-    },
+    // {
+    //   header: "Empleado",
+    //   accessorKey: "empleado",
+    //   size: 15,
+    // },
     {
       header: "Fecha y hora",
       accessorKey: "fecha",
@@ -77,13 +77,13 @@ const Ventas = (props) => {
         null //email
       ).then((response) => {
         let ventas = response.data.results;
+        // console.log(ventas);
         setCount(response.data.count);
         if (ventas) {
           let datos = [];
           ventas.forEach((venta) => {
             datos.push({
               id: venta.id,
-              empleado: venta.empleado_detalle.email,
               fecha: venta.fecha_creacion
                 ? moment(venta.fecha_creacion, "DD/MM/YYYY HH:mm:ss").format(
                     "DD/MM/YYYY HH:mm"
@@ -126,11 +126,11 @@ const Ventas = (props) => {
   const handleEliminarVenta = async (row) => {
     await Swal.fire({
       title: "Esta seguro de borrar esta venta?",
-      text: "",
+      text: "esta acción no se podrá deshacer, afectará los reportes de ventas",
       icon: "warning",
       showCancelButton: true,
       showConfirmButton: true,
-      confirmButtonColor: "#008185",
+      // confirmButtonColor: "#008185",
       cancelButtonColor: "#EC1B23",
       confirmButtonText: "Aceptar",
       cancelButtonText: "Cancelar",
@@ -185,18 +185,6 @@ const Ventas = (props) => {
           }}
         >
           <h2 className="py-2 fw ml-10">Ventas</h2>
-
-          {/* <Button 
-            className="btn"
-            style={{
-              justifyContent: "center",
-              alignItems: "center",
-              marginRight: 10,
-            }}
-            onClick={handleOpenModalAgregarVenta}
-          >
-            Agregar
-          </Button> */}
         </Card.Header>
         <Card.Body className="mb-13" style={{ paddingBottom: 0 }}>
           <Row

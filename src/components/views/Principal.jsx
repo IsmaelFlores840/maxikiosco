@@ -4,8 +4,6 @@ import OpcionInicio from "./OpcionInicio";
 import { Container, Card, Row, Col } from "react-bootstrap";
 
 const Principal = (props) => {
-  // const rolUser = props.rolUsuario;
-
   return (
     <Container className="mainSection">
       <Row className="auto mt-5">
@@ -25,7 +23,6 @@ const Principal = (props) => {
             ruta={"/Punto-venta"} // modificar
           />
         </Col>
-
         <Col
           style={{
             display: "flex",
@@ -39,7 +36,6 @@ const Principal = (props) => {
             ruta={"/Gestion-productos"}
           />
         </Col>
-
         <Col
           style={{
             display: "flex",
@@ -53,7 +49,6 @@ const Principal = (props) => {
             ruta={"/Gestion-proveedores"}
           />
         </Col>
-
         <Col
           style={{
             display: "flex",
@@ -67,7 +62,6 @@ const Principal = (props) => {
             ruta={"/Gestion-ventas"}
           />
         </Col>
-
         <Col
           style={{
             display: "flex",
@@ -81,7 +75,6 @@ const Principal = (props) => {
             ruta={"/Gestion-clientes"}
           />
         </Col>
-
         <Col
           style={{
             display: "flex",
@@ -95,7 +88,6 @@ const Principal = (props) => {
             ruta={"/Gestion-empleados"}
           />
         </Col>
-
         <Col
           style={{
             display: "flex",

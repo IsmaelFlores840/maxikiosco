@@ -18,7 +18,7 @@ import "react-datetime/css/react-datetime.css";
 import Swal from "sweetalert2";
 
 export function ModalEmpleado(props) {
-  const URL_USUARIOS = window.API_ROUTES.USUARIOS;
+  const URL_EMPLEADO = window.API_ROUTES.EMPLEADO;
   const URL_ROL = window.API_ROUTES.ROL;
 
   const [nombre, setNombre] = useState("");
@@ -77,9 +77,9 @@ export function ModalEmpleado(props) {
         documento: documento,
         email: email,
         // contrasenia: contrasenia,
-        rol: rol,
+        // rol: rol,
       };
-      await ConsultasAPI.CrearObjeto(URL_USUARIOS, empleado).then(() => {
+      await ConsultasAPI.CrearObjeto(URL_EMPLEADO, empleado).then(() => {
         Swal.fire({
           title: "Crecion exitosa",
           text: "Empleado generado con exito",
@@ -129,7 +129,7 @@ export function ModalEmpleado(props) {
             usuario: AuthenticationHelper.getUser(),
           };
           const response = await ConsultasAPI.ModificarObjeto(
-            URL_USUARIOS + "modificarEmpleado/",
+            URL_EMPLEADO + "modificarEmpleado/",
             props.datosEmpleado.id,
             objeto
           );
@@ -297,7 +297,6 @@ export function ModalEmpleado(props) {
                   </Form.Group>
                 </Col>
               </Row>
-
             </Card.Body>
           </Card>
         </Modal.Body>

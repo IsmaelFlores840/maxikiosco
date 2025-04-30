@@ -11,8 +11,7 @@ import { Edit, Delete } from "@mui/icons-material";
 import Swal from "sweetalert2";
 
 const Empleados = (props) => {
-  const URL_USUARIOS = window.API_ROUTES.USUARIOS;
-  const rolUser = props.rolUsuario;
+  const URL_EMPLEADO = window.API_ROUTES.EMPLEADO;
 
   const [pagination, setPagination] = useState({
     pageIndex: 0,
@@ -35,7 +34,7 @@ const Empleados = (props) => {
   const cargarEmpleados = () => {
     try {
       ConsultasAPI.ListarObjetos(
-        URL_USUARIOS,
+        URL_EMPLEADO,
         pagination.pageIndex,
         pagination.pageSize,
         columnFilters,
@@ -121,7 +120,7 @@ const Empleados = (props) => {
       cancelButtonText: "Cancelar",
     }).then((result) => {
       if (result.isConfirmed) {
-        ConsultasAPI.BorrarObjeto(URL_USUARIOS, row.id)
+        ConsultasAPI.BorrarObjeto(URL_EMPLEADO, row.id)
           .then((response) => {
             if (response.status === 204) {
               Swal.fire({
@@ -145,7 +144,7 @@ const Empleados = (props) => {
   };
 
   const handleEditarEmpleado = async (row) => {
-    const empleado = await ConsultasAPI.ObtenerObjeto(URL_USUARIOS, row.id);
+    const empleado = await ConsultasAPI.ObtenerObjeto(URL_EMPLEADO, row.id);
     setDatossEmpleado(empleado.data);
     setTituloModal("Editar");
     setModalCargarEmpleados(true);
